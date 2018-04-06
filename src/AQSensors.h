@@ -2,6 +2,8 @@
 #define _AQ_SENSORS_H_
 
 #include "AQMonitor.h"
+#include <Wire.h>
+#include <BME280_t.h>
 
 class AQSensors {
     public:
@@ -13,7 +15,8 @@ class AQSensors {
         float getVOC();
         float getCO2e();
     private:
-        bool _isI2CInitialized;
+        unsigned long _lastRefresh;
+        BME280<> _bme280sensor;  
 };
 
 extern AQSensors aqSensors;
