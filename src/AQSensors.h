@@ -4,6 +4,7 @@
 #include "AQMonitor.h"
 #include <Wire.h>
 #include <BME280_t.h>
+#include <MICS-VZ-89TE.h>
 
 class AQSensors {
     public:
@@ -16,7 +17,8 @@ class AQSensors {
         float getCO2e();
     private:
         unsigned long _lastRefresh;
-        BME280<> _bme280sensor;  
+        BME280<> _temperatureSensor;
+        MICS_VZ_89TE _micsvz89te;
 };
 
 extern AQSensors aqSensors;

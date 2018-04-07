@@ -25,3 +25,11 @@ PWM in:
  UART:
    * D5, D6, D7
 
+
+
+Updates:
+=========================
+
+07 April 2018
+
+Looking at the values from the MICS-VZ-89TE - I'm not very convinced for the reliability of the sensor. Considering BME680 as alternative.
