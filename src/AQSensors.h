@@ -3,7 +3,7 @@
 
 #include "AQMonitor.h"
 #include <Wire.h>
-#include <BME280_t.h>
+#include <SparkFunBME280.h>
 #include <MICS-VZ-89TE.h>
 
 class AQSensors {
@@ -15,9 +15,15 @@ class AQSensors {
         float getHumidity();
         float getVOC();
         float getCO2e();
+        float getPressure();
     private:
+        float _temp = 0.0f;
+        float _humidity = 0.0f;
+        float _voc = 0.0f;
+        float _co2e = 0.0f;
+        float _pressure = 0.0f;
         unsigned long _lastRefresh;
-        BME280<> _temperatureSensor;
+        BME280 _temperatureSensor;
         MICS_VZ_89TE _micsvz89te;
 };
 

@@ -37,7 +37,19 @@ void WebServer::handle_reset() {
 }
 
 void WebServer::handle_get() {
-    _server->send(200, "Not implemented yet...");
+    char resp[128];
+
+    sprintf(resp,
+            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"voc\":%.2f,\"co2e\":%.2f}",
+            aqSensors.getTemp(),
+            aqSensors.getHumidity(),
+            aqSensors.getPressure(),
+            aqSensors.getVOC(),
+            aqSensors.getCO2e());
+
+    Serial.println(resp);
+
+    _server->send(200, "application/json", resp);
 }
 
 WebServer webServer = WebServer(HTTP_PORT);

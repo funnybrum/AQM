@@ -6,70 +6,90 @@ AQSensors::AQSensors() {
 
 void AQSensors::begin() {
     Wire.begin(I2C_SDA, I2C_SCL);
+
+    _temperatureSensor.setI2CAddress(0x76);
     _temperatureSensor.begin();
+    _temperatureSensor.setMode(MODE_SLEEP);
     // _micsvz89te.begin();
 }
 
 void AQSensors::loop() {
-    if (millis() - _lastRefresh > 1000 * 10) {
+    if (millis() - _lastRefresh > 1000 * 30) {
+        // if (_lastRefresh == 0) {
+        //     Serial.print("ts");
+        //     Serial.print("\t");
+        //     Serial.print("temp");
+        //     Serial.print("\t");
+        //     Serial.print("humidity");
+        //     Serial.print("\t");
+        //     Serial.print("pressure");
+        //     Serial.print("\t");
+        //     Serial.print("voc");
+        //     Serial.print("\t");
+        //     Serial.print("co2e");
+        //     Serial.print("\t");
+        //     Serial.println();
+        // }
         _lastRefresh = millis();
-        _temperatureSensor.refresh();
+
+        _temperatureSensor.setMode(MODE_FORCED);
+        while (_temperatureSensor.isMeasuring() == false) {
+            delay(1);
+        } //Wait for sensor to start measurment
+
+        while (_temperatureSensor.isMeasuring() == true) {
+            delay(1);
+        } //Hang out while sensor completes the reading    
+
+        _temp = _temperatureSensor.readTempC();
+        _humidity = _temperatureSensor.readFloatHumidity();
+        _pressure = _temperatureSensor.readFloatPressure();
+
         _micsvz89te.readSensor();
-        _micsvz89te.getVersion();
 
-        Serial.println();
-        Serial.println();
-        Serial.println();
+        _voc = _micsvz89te.getVOC();
+        _co2e = _micsvz89te.getCO2();
 
-        Serial.print("Temperature: ");
-        Serial.print(_temperatureSensor.temperature);
-        Serial.println("C");
+        // Serial.print(millis() / 30000L);
+        // Serial.print("\t");
 
-        Serial.print("Humidity:    ");
-        Serial.print(_temperatureSensor.humidity);
-        Serial.println("%");
+        // Serial.print(_temperatureSensor.readTempC(), 2);
+        // Serial.print("\t");
 
-        Serial.print("Pressure:    ");
-        Serial.print(_temperatureSensor.pressure  / 100.0F);
-        Serial.println("hPa");
+        // Serial.print(_temperatureSensor.readFloatHumidity(), 1);
+        // Serial.print("\t");
 
-        Serial.print("VOC:         ");
-        Serial.println(_micsvz89te.getVOC());
+        // Serial.print(_temperatureSensor.readFloatPressure(), 1);
+        // Serial.print("\t");
 
-        Serial.print("CO2e:        ");
-        Serial.println(_micsvz89te.getCO2());
+        // Serial.print(_micsvz89te.getVOC());
+        // Serial.print("\t");
 
-        Serial.print("Status:      ");
-        Serial.println(_micsvz89te.getStatus());
+        // Serial.print(_micsvz89te.getCO2());
+        // Serial.print("\t");
 
-        Serial.print("Revision:    ");
-        Serial.println(_micsvz89te.getRev());
-
-        Serial.print("Year:        ");
-        Serial.println(_micsvz89te.getYear());
-
-        Serial.print("Month:       ");
-        Serial.println(_micsvz89te.getMonth());
-
-        Serial.print("Day:         ");
-        Serial.println(_micsvz89te.getDay());
+        // Serial.println();
     }
 }
 
 float AQSensors::getCO2e() {
-    return 1.0f;
+    return this->_co2e;
 }
 
 float AQSensors::getVOC() {
-    return 1.0f;
+    return this->_voc;
 }
 
 float AQSensors::getHumidity() {
-    return 1.0f;
+    return this->_humidity;
 }
 
 float AQSensors::getTemp() {
-    return 1.0f;
+    return this->_temp;
+}
+
+float AQSensors::getPressure() {
+    return this->_pressure;
 }
 
 AQSensors aqSensors = AQSensors();
