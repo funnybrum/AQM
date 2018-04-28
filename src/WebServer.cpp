@@ -47,8 +47,6 @@ void WebServer::handle_get() {
             aqSensors.getVOC(),
             aqSensors.getCO2e());
 
-    Serial.println(resp);
-
     _server->send(200, "application/json", resp);
 }
 

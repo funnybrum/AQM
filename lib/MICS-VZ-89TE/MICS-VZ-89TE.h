@@ -56,7 +56,7 @@ public:
     float crc;
     
     bool begin(void);
-    void readSensor(void);
+    bool readSensor(void);
     void getVersion(void);
     
     

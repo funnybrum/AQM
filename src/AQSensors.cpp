@@ -16,6 +16,8 @@ void AQSensors::begin() {
 void AQSensors::loop() {
     if (millis() - _lastRefresh > 1000 * 30) {
         // if (_lastRefresh == 0) {
+        //     Serial.print("status");
+        //     Serial.print("\t");
         //     Serial.print("ts");
         //     Serial.print("\t");
         //     Serial.print("temp");
@@ -45,10 +47,16 @@ void AQSensors::loop() {
         _humidity = _temperatureSensor.readFloatHumidity();
         _pressure = _temperatureSensor.readFloatPressure();
 
-        _micsvz89te.readSensor();
-
-        _voc = _micsvz89te.getVOC();
-        _co2e = _micsvz89te.getCO2();
+        for (int i = 0; i < 3; i++) {
+            if (_micsvz89te.readSensor()) {
+                _voc = _micsvz89te.getVOC();
+                _co2e = _micsvz89te.getCO2();
+                break;
+            } else {
+                // Serial.println("Failed to read the VOC sensor");
+                delay(100);
+            }    
+        }
 
         // Serial.print(millis() / 30000L);
         // Serial.print("\t");

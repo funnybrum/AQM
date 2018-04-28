@@ -51,7 +51,7 @@ float MICS_VZ_89TE::getStatus(void) {
     return status;
 }
 
-void MICS_VZ_89TE::readSensor(void) {
+bool MICS_VZ_89TE::readSensor(void) {
     static uint8_t data[7];
     readData(MICS_VZ_89TE_ADDR_CMD_GETSTATUS, data);
     
@@ -59,7 +59,21 @@ void MICS_VZ_89TE::readSensor(void) {
     
     co2 = (data[1] - 13) * (1600.0 / 229) + 400; // ppm: 400 .. 2000
     voc = (data[0] - 13) * (1000.0/229); // ppb: 0 .. 1000
+    
+    for (int i = 0; i <= 6; i++) {
+        Serial.print(data[i], HEX);
+        Serial.print(" ");
+    }
+    Serial.println();
 
+    uint16_t crc = 0x00;
+    for (uint8_t i = 0; i < 6; i++) {
+        crc += data[i];
+    }
+
+    crc = crc & 0x00FF;
+    crc = 0xFE - crc;
+    return crc == data[6];
 }
 
 void MICS_VZ_89TE::getVersion(void) {
