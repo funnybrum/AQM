@@ -39,9 +39,9 @@
  * No license is granted by implication or otherwise under any patent or
  * patent rights of the copyright holder.
  *
- * @file    bme680_defs.h
- * @date	30 Oct 2017
- * @version	3.5.3
+ * @file	bme680_defs.h
+ * @date	22 Feb 2018
+ * @version	3.5.8
  * @brief
  *
  */
@@ -70,23 +70,23 @@
 /******************************************************************************/
 
 #if !defined(UINT8_C) && !defined(INT8_C)
-#define INT8_C(x)       (x)
-#define UINT8_C(x)      (x)
+#define INT8_C(x)       S8_C(x)
+#define UINT8_C(x)      U8_C(x)
 #endif
 
 #if !defined(UINT16_C) && !defined(INT16_C)
-#define INT16_C(x)      (x)
-#define UINT16_C(x)     (x)
+#define INT16_C(x)      S16_C(x)
+#define UINT16_C(x)     U16_C(x)
 #endif
 
 #if !defined(INT32_C) && !defined(UINT32_C)
-#define INT32_C(x)      (x)
-#define UINT32_C(x)     (x)
+#define INT32_C(x)      S32_C(x)
+#define UINT32_C(x)     U32_C(x)
 #endif
 
 #if !defined(INT64_C) && !defined(UINT64_C)
-#define INT64_C(x)      (x)
-#define UINT64_C(x)     (x)
+#define INT64_C(x)      S64_C(x)
+#define UINT64_C(x)     U64_C(x)
 #endif
 
 /**@}*/
@@ -100,6 +100,12 @@
 #endif
 #endif
 
+/** BME680 configuration macros */
+/** Enable or un-comment the macro to provide floating point data output */
+#ifndef BME680_FLOAT_POINT_COMPENSATION
+#define BME680_FLOAT_POINT_COMPENSATION
+#endif
+
 /** BME680 General config */
 #define BME680_POLL_PERIOD_MS		UINT8_C(10)
 
@@ -111,7 +117,7 @@
 #define BME680_CHIP_ID  UINT8_C(0x61)
 
 /** BME680 coefficients related defines */
-#define BME680_COEFF_SIZE		UINT8_C(0x41)
+#define BME680_COEFF_SIZE		UINT8_C(41)
 #define BME680_COEFF_ADDR1_LEN		UINT8_C(25)
 #define BME680_COEFF_ADDR2_LEN		UINT8_C(16)
 
@@ -220,7 +226,6 @@
 #define BME680_REG_BUFFER_LENGTH	UINT8_C(6)
 #define BME680_FIELD_DATA_LENGTH	UINT8_C(3)
 #define BME680_GAS_REG_BUF_LENGTH	UINT8_C(20)
-#define BME680_GAS_HEATER_PROF_LEN_MAX  UINT8_C(10)
 
 /** Settings selector */
 #define BME680_OST_SEL			UINT16_C(1)
@@ -311,6 +316,14 @@
 #define BME680_REG_RUN_GAS_INDEX	UINT8_C(1)
 #define BME680_REG_HCTRL_INDEX		UINT8_C(0)
 
+/** BME680 pressure calculation macros */
+/*! This max value is used to provide precedence to multiplication or division
+ * in pressure compensation equation to achieve least loss of precision and
+ * avoiding overflows.
+ * i.e Comparing value, BME680_MAX_OVERFLOW_VAL = INT32_C(1 << 30)
+ */
+#define BME680_MAX_OVERFLOW_VAL      INT32_C(0x40000000)
+
 /** Macro to combine two 8 bit data's to form a 16 bit data */
 #define BME680_CONCAT_BYTES(msb, lsb)	(((uint16_t)msb << 8) | (uint16_t)lsb)
 
@@ -328,7 +341,7 @@
 #define BME680_GET_BITS_POS_0(reg_data, bitname)  (reg_data & (bitname##_MSK))
 
 /** Type definitions */
-/*
+/*!
  * Generic communication function pointer
  * @param[in] dev_id: Place holder to store the id of the device structure
  *                    Can be used to store the index of the Chip select or
@@ -340,7 +353,7 @@
  */
 typedef int8_t (*bme680_com_fptr_t)(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len);
 
-/*
+/*!
  * Delay function pointer
  * @param[in] period: Time period in milliseconds
  */
@@ -367,6 +380,8 @@ struct	bme680_field_data {
 	uint8_t gas_index;
 	/*! Measurement index to track order */
 	uint8_t meas_index;
+
+#ifndef BME680_FLOAT_POINT_COMPENSATION
 	/*! Temperature in degree celsius x100 */
 	int16_t temperature;
 	/*! Pressure in Pascal */
@@ -375,8 +390,18 @@ struct	bme680_field_data {
 	uint32_t humidity;
 	/*! Gas resistance in Ohms */
 	uint32_t gas_resistance;
+#else
+	/*! Temperature in degree celsius */
+	float temperature;
+	/*! Pressure in Pascal */
+	float pressure;
+	/*! Humidity in % relative humidity x1000 */
+	float humidity;
+	/*! Gas resistance in Ohms */
+	float gas_resistance;
 
-	uint8_t iaq_accuracy;
+#endif
+
 };
 
 /*!
@@ -429,8 +454,14 @@ struct	bme680_calib_data {
 	int16_t par_p9;
 	/*! Variable to store calibrated pressure data */
 	uint8_t par_p10;
+
+#ifndef BME680_FLOAT_POINT_COMPENSATION
 	/*! Variable to store t_fine size */
 	int32_t t_fine;
+#else
+	/*! Variable to store t_fine size */
+	float t_fine;
+#endif
 	/*! Variable to store heater resistance range */
 	uint8_t res_heat_range;
 	/*! Variable to store heater resistance value */
@@ -465,9 +496,9 @@ struct	bme680_gas_sett {
 	uint8_t heatr_ctrl;
 	/*! Run gas enable value */
 	uint8_t run_gas;
-	/*! Pointer to store heater temperature */
+	/*! Heater temperature value */
 	uint16_t heatr_temp;
-	/*! Pointer to store duration profile */
+	/*! Duration profile value */
 	uint16_t heatr_dur;
 };
 
@@ -483,7 +514,7 @@ struct	bme680_dev {
 	enum bme680_intf intf;
 	/*! Memory page used */
 	uint8_t mem_page;
-	/*! Ambient temperature in Degree C*/
+	/*! Ambient temperature in Degree C */
 	int8_t amb_temp;
 	/*! Sensor calibration data */
 	struct bme680_calib_data calib;
@@ -497,11 +528,11 @@ struct	bme680_dev {
 	uint8_t new_fields;
 	/*! Store the info messages */
 	uint8_t info_msg;
-	/*! Burst read structure */
+	/*! Bus read function pointer */
 	bme680_com_fptr_t read;
-	/*! Burst write structure */
+	/*! Bus write function pointer */
 	bme680_com_fptr_t write;
-	/*! Delay in ms */
+	/*! delay function pointer */
 	bme680_delay_fptr_t delay_ms;
 	/*! Communication function result */
 	int8_t com_rslt;

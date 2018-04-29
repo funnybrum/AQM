@@ -3,7 +3,8 @@
 
 #include "AQMonitor.h"
 #include <Wire.h>
-#include "DFRobot_BME680_I2C.h"
+#include <EEPROM.h>
+#include "bsec.h"
 
 class AQSensors {
     public:
@@ -22,9 +23,15 @@ class AQSensors {
         float _co2e = 0.0f;
         float _pressure = 0.0f;
         unsigned long _lastRefresh;
-        uint8_t _calibrated = 0;
-        float _seaLevel;
-        DFRobot_BME680_I2C _bme = DFRobot_BME680_I2C(0x77);
+        unsigned long _lastStateUpdate;
+
+        Bsec _iaqSensor = Bsec();
+        String _output;
+
+        // Helper function definitions
+        void checkIaqSensorStatus(void);
+        void loadState(void);
+        void updateState(void);
 };
 
 extern AQSensors aqSensors;
