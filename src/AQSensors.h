@@ -3,8 +3,7 @@
 
 #include "AQMonitor.h"
 #include <Wire.h>
-#include <SparkFunBME280.h>
-#include <MICS-VZ-89TE.h>
+#include "DFRobot_BME680_I2C.h"
 
 class AQSensors {
     public:
@@ -23,8 +22,9 @@ class AQSensors {
         float _co2e = 0.0f;
         float _pressure = 0.0f;
         unsigned long _lastRefresh;
-        BME280 _temperatureSensor;
-        MICS_VZ_89TE _micsvz89te;
+        uint8_t _calibrated = 0;
+        float _seaLevel;
+        DFRobot_BME680_I2C _bme = DFRobot_BME680_I2C(0x77);
 };
 
 extern AQSensors aqSensors;
