@@ -100,7 +100,7 @@ void AQSensors::checkIaqSensorStatus(void)
             _output = "BSEC error code : " + String(_iaqSensor.status);
             Serial.println(_output);
             for (;;) {
-                Serial.print(_output);
+                Serial.println(_output);
                 delay(1000);
             }
         } else {
