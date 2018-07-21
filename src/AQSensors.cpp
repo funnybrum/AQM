@@ -54,7 +54,8 @@ void AQSensors::loop() {
             _temp = _iaqSensor.temperature;
             _pressure = _iaqSensor.pressure;
             _humidity = _iaqSensor.humidity;
-            _voc = _iaqSensor.iaqEstimate;
+            _iaq = _iaqSensor.iaqEstimate;
+            _iaq_accuracy = _iaqSensor.iaqAccuracy;
 
             _output = String(millis()/1000);
             _output += ",\t" + String(_iaqSensor.rawTemperature);
@@ -72,12 +73,12 @@ void AQSensors::loop() {
     }
 }
 
-float AQSensors::getCO2e() {
-    return _co2e;
+float AQSensors::getIAQAccuracy() {
+    return _iaq_accuracy;
 }
 
-float AQSensors::getVOC() {
-    return _voc;
+float AQSensors::getIAQ() {
+    return _iaq;
 }
 
 float AQSensors::getHumidity() {

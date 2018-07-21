@@ -40,12 +40,12 @@ void WebServer::handle_get() {
     char resp[128];
 
     sprintf(resp,
-            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"voc\":%.2f,\"co2e\":%.2f}",
+            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"iaq\":%.2f,\"iaq_accuracy\":%.2f}",
             aqSensors.getTemp(),
             aqSensors.getHumidity(),
             aqSensors.getPressure(),
-            aqSensors.getVOC(),
-            aqSensors.getCO2e());
+            aqSensors.getIAQ(),
+            aqSensors.getIAQAccuracy());
 
     _server->send(200, "application/json", resp);
 }

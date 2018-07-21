@@ -13,14 +13,14 @@ class AQSensors {
         void loop();
         float getTemp();
         float getHumidity();
-        float getVOC();
-        float getCO2e();
+        float getIAQ();
+        float getIAQAccuracy();
         float getPressure();
     private:
         float _temp = 0.0f;
         float _humidity = 0.0f;
-        float _voc = 0.0f;
-        float _co2e = 0.0f;
+        float _iaq = 0.0f;
+        float _iaq_accuracy = 0.0f;
         float _pressure = 0.0f;
         unsigned long _lastRefresh;
         unsigned long _lastStateUpdate;
