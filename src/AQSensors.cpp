@@ -10,7 +10,6 @@ void AQSensors::begin() {
     Wire.begin(I2C_SDA, I2C_SCL);
 
     // Init the sensor
-
     // iaqSensor.setConfig("generic_33v_300s_4d");
     _iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
     _output = "\nBSEC library version " +
