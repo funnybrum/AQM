@@ -24,7 +24,11 @@ The current implementation relies on the BSEC library from Bosch. The library pr
 * 201 .. 300 Worse
 * 301 .. 500 Very bad
 
-The IAQ is not an absolute value, but is relative to the condition that the sensor is in. 0/500 would usually indicate the clearest/dirtiest conditions that the sensor have seen.
+The IAQ is not an absolute value, but is relative to the condition that the sensor is in. A quote from BME680 documentation that is providing a bit more details on that:
+
+```
+The BSEC software auto-calibrates the low and high concentrations applied during testing to IAQ of 25 and 250, respectivel.
+```
 
 When assembled and started the sensor have to be calibrated. There is an accuracy output provided on the REST interface and the serial output that can be used as indicator about that. The accuracy values as specified by Bosch have the following semantic:
 * 0 - The sensor is not yet stablized or in a run-in status
