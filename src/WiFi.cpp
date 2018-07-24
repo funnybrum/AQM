@@ -25,17 +25,21 @@ void ScanAndConnect() {
         }
     }
 
-    Serial.printf("Connectiong to %s (%ddBm)\n", strongestSSID.c_str(), strongestSignalStrength);
+    if (strongestSSID.compareTo("") != 0) {
+        Serial.printf("Connectiong to %s (%ddBm)\n", strongestSSID.c_str(), strongestSignalStrength);
 
-    WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
+        WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
 
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+        while (WiFi.status() != WL_CONNECTED) {
+            delay(500);
+            Serial.print(".");
+        }
+
+        Serial.print("\nConnected, ip address: ");
+        Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("No known network found...");
     }
-
-    Serial.print("\nConnected, ip address: ");
-    Serial.println(WiFi.localIP());
 
     WiFi.scanDelete();
 }

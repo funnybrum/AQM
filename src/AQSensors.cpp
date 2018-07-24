@@ -10,8 +10,8 @@ void AQSensors::begin() {
     Wire.begin(I2C_SDA, I2C_SCL);
 
     // Init the sensor
-    // iaqSensor.setConfig("generic_33v_300s_4d");
     _iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
+
     _output = "\nBSEC library version " +
         String(_iaqSensor.version.major) +
         "." +
@@ -19,6 +19,28 @@ void AQSensors::begin() {
         "." + String(_iaqSensor.version.major_bugfix) +
         "." + String(_iaqSensor.version.minor_bugfix);
     Serial.println(_output);
+
+    // As per the documentation - 'The default configuration (after calling bsec_init), to which
+    // BSEC will be configured, is "generic_18v_300s_4d"'. However this firmware is for PCB that
+    // works on 3.3V, so - the default config is overridden with the generic_33v_300s_4d one.
+    const uint8_t generic_33v_300s_4d[BSEC_MAX_PROPERTY_BLOB_SIZE] = {
+        0,6,4,1,61,0,0,0,0,0,0,0,24,1,0,0,40,0,1,0,137,65,0,63,0,0,64,63,205,204,76,62,0,0,225,68,
+        0,192,168,71,0,0,0,0,0,80,10,90,0,0,0,0,0,0,0,0,21,0,2,0,0,244,1,225,0,25,10,144,1,0,0,112,
+        65,0,0,0,63,16,0,3,0,10,215,163,60,10,215,35,59,10,215,35,59,9,0,5,0,0,0,0,0,1,51,0,9,0,
+        10,215,163,59,205,204,204,61,225,122,148,62,41,92,15,61,0,0,0,63,0,0,0,63,154,153,89,63,
+        154,153,25,62,1,1,0,0,128,63,6,236,81,184,61,51,51,131,64,12,0,10,0,0,0,0,0,0,0,0,0,131,0,
+        254,0,2,1,5,48,117,100,0,44,1,151,7,132,3,197,0,144,1,64,1,64,1,48,117,48,117,48,117,48,
+        117,100,0,100,0,100,0,48,117,48,117,48,117,100,0,100,0,48,117,100,0,100,0,100,0,100,0,48,
+        117,48,117,48,117,100,0,100,0,100,0,48,117,48,117,100,0,44,1,44,1,44,1,44,1,44,1,44,1,44,1,
+        44,1,44,1,44,1,44,1,44,1,44,1,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+        255,255,255,255,255,255,255,255,255,255,255,44,1,0,0,0,0,98,149,0,0
+    };
+    _iaqSensor.setConfig(generic_33v_300s_4d);
+
+    // Sensor shows the temperature of the chip itself and this is usually above ambient. An offset
+    // can be configured to compensate for this. The offset depends on the PCB layout.
+    _iaqSensor.setTemperatureOffset(2.5f);
+
     checkIaqSensorStatus();
     loadState();
 
