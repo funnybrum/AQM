@@ -39,7 +39,7 @@ void AQSensors::begin() {
 
     // Sensor shows the temperature of the chip itself and this is usually above ambient. An offset
     // can be configured to compensate for this. The offset depends on the PCB layout.
-    _iaqSensor.setTemperatureOffset(2.5f);
+    _iaqSensor.setTemperatureOffset(3.5f);
 
     checkIaqSensorStatus();
     loadState();

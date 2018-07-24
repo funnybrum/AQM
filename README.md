@@ -1,35 +1,37 @@
-MH-Z19 - UART, PWM, VCC@5V, TTL@3.3V, PWM@?V
-http://www.winsen-sensor.com/d/files/PDF/Infrared%20Gas%20Sensor/NDIR%20CO2%20SENSOR/MH-Z19%20CO2%20Ver1.0.pdf
+# AQM
+## Summary
+
+An Air Quality Monitor firmware for ESP8266 board and BME680 sensor.
+
+Several sensors were considered and tested before stopping on BME680. Such are the MH-Z19, MICS-VZ-89TE, BME280. The BME680 provide single index of the IAQ that seems to be more than sufficient. As optional improvment I'm considering to add also support for dust particle sensor (probably PMS5003).
 
 
-MICS-VZ-89TE - PWM, I2C, TTL@3.3V, address = 0b11100000 / 0b11100001
-https://www.sgxsensortech.com/content/uploads/2017/03/I2C-Datasheet-MiCS-VZ-89TE-rev-H-ed170214-Read-Only.pdf
-https://www.sgxsensortech.com/content/uploads/2016/07/MiCS-VZ-89TE-V1.0.pdf
+## Calibrating the sensor
 
+### Temperature calibration
 
-PMS5003 - UART, VCC@5V, TTL@3.3V
-http://www.aqmd.gov/docs/default-source/aq-spec/resources-page/plantower-pms5003-manual_v2-3.pdf
+The sensor is quite accurate, but it measures the temperature of the sensor itself. If the sensor is close to heat emitting components - it will get heated and the temperature reading will have to be compoensated for that. The calibration is based on an offset value and it should be calculated with precise reference point.
 
+Currently the temperature offset is set directly in the code as parameter of the setTemperatureOffset method.
 
-BME280 - I2C, TTL@3.3V, address = 0b1110110 / 0b1110111
+### IAQ index calibration
 
+The current implementation relies on the BSEC library from Bosch. The library provide build in algorithms that can calculate the air quality and provide a IAQ reference value between 0 and 500. The IAQ index has the following semantic:
+* 0 .. 50 Good
+* 51 .. 100 Average
+* 101 .. 150 Little bad
+* 151 .. 200 Bad
+* 201 .. 300 Worse
+* 301 .. 500 Very bad
 
-Wemos D1 mini pins (https://wiki.wemos.cc/products:d1:d1_mini):
-I2C:
-  * D1 (GPIO5) - SCL
-  * D2 (GPIO4) - SDA
+The IAQ is not an absolute value, but is relative to the condition that the sensor is in. 0/500 would usually indicate the clearest/dirtiest conditions that the sensor have seen.
 
-PWM in:
-  * D0
+When assembled and started the sensor have to be calibrated. There is an accuracy output provided on the REST interface and the serial output that can be used as indicator about that. The accuracy values as specified by Bosch have the following semantic:
+* 0 - The sensor is not yet stablized or in a run-in status
+* 1 - Calibration required
+* 2 - Calibration on-going
+* 3 - Calibration is done, now IAQ estimate achieves best perfomance
 
- UART:
-   * D5, D6, D7
+Calibration is performed automatically in the background if the sensor is exposed to clean and polluted air for approximately 30 minutes each. What I do - use small plastic bag and fill it with dirty air (breath inside several times or whatever you came up with). Seal the bag with the sensor inside and keep it like this for 30 minutes. For the clean air - bring the sensor outside your home and keep it running there in a clear day for 30 minutes. Once the process is complete you'll get the accuracy output with value 3.
 
-
-
-Updates:
-=========================
-
-07 April 2018
-
-Looking at the values from the MICS-VZ-89TE - I'm not very convinced for the reliability of the sensor. Considering BME680 as alternative.
+*Note* - I'm considering a precalibration logic and process that will eliminate the BSEC autocalibration feature. The calibraiton will most likely be done once and will allow consistent reading over time (without further automatic recalibration). The goal is to have IAQ that is absolute and a sensor that will produce exactly the same value for specific air quality.
