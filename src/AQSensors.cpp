@@ -51,7 +51,7 @@ void AQSensors::begin() {
         BSEC_OUTPUT_RAW_GAS,
         BSEC_OUTPUT_IAQ_ESTIMATE,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY
     };
 
     _iaqSensor.updateSubscription(sensorList, 7, BSEC_SAMPLE_RATE_LP);
@@ -67,7 +67,7 @@ void AQSensors::loop() {
         } else {
             if (_lastRefresh == 0) {
                 // Print the header
-                _output = "sec,\tr_temp,\tpressure,\tr_hum,\tgas (Ohm),\tIAQ  ,\tacc,\ttemp,\thumidity";
+                _output = "sec,\tr_temp,\tpressure,\tr_hum,\tgas (Ohm),\tIAQ,\t\tacc,\ttemp,\thumidity";
                 Serial.println(_output);
             }
 
@@ -85,9 +85,10 @@ void AQSensors::loop() {
             _output += ",\t" + String(_iaqSensor.rawHumidity);
             _output += ",\t" + String(_iaqSensor.gasResistance);
             _output += ",\t" + String(_iaqSensor.iaqEstimate);
-            _output += ",\t" + String(_iaqSensor.iaqAccuracy);
+            _output += ",\t\t" + String(_iaqSensor.iaqAccuracy);
             _output += ",\t" + String(_iaqSensor.temperature);
             _output += ",\t" + String(_iaqSensor.humidity);
+
             Serial.println(_output);
 
             updateState();
