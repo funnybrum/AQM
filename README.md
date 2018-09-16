@@ -43,4 +43,4 @@ Calibration is performed automatically in the background if the sensor is expose
 ## Over-the-air programming
 
 The firmware supports OTA update. Below curl command executed from the project root will perform the update:
-> curl -F "image=@.pioenvs/d1_mini/firmware.bin" br-aq-monitor1.local/update
+> curl -F "image=@.pioenvs/d1_mini/firmware.bin" br-aq-monitor1/update

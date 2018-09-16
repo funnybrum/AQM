@@ -49,7 +49,7 @@ void WebServer::handle_get() {
     char resp[128];
 
     sprintf(resp,
-            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"iaq\":%.2f,\"iaq_accuracy\":%.2f,\"gasResistance\":%.0f}",
+            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"iaq\":%.2f,\"iaq_accuracy\":%.2f,\"gas_resistance\":%.0f}",
             aqSensors.getTemp(),
             aqSensors.getHumidity(),
             aqSensors.getPressure(),
