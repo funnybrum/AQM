@@ -16,7 +16,7 @@ void ScanAndConnect() {
         int signalStrength = WiFi.RSSI(i);
         String ssid = WiFi.SSID(i);
         if (strongestSignalStrength < signalStrength) {
-            for (int j = 0; j < sizeof(WIFI_SSIDs)/sizeof(WIFI_SSIDs[0]); j++) {
+            for (unsigned int j = 0; j < sizeof(WIFI_SSIDs)/sizeof(WIFI_SSIDs[0]); j++) {
                 if (ssid.equals(WIFI_SSIDs[j])) {
                     strongestSignalStrength = signalStrength;
                     strongestSSID = WiFi.SSID(i);
@@ -28,6 +28,7 @@ void ScanAndConnect() {
     if (strongestSSID.compareTo("") != 0) {
         Serial.printf("Connectiong to %s (%ddBm)\n", strongestSSID.c_str(), strongestSignalStrength);
 
+        WiFi.hostname(HOSTNAME);
         WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
 
         while (WiFi.status() != WL_CONNECTED) {

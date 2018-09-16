@@ -16,12 +16,15 @@ class AQSensors {
         float getIAQ();
         float getIAQAccuracy();
         float getPressure();
+        float getGasResistance();
+        void eraseEEPROM();
     private:
         float _temp = 0.0f;
         float _humidity = 0.0f;
         float _iaq = 0.0f;
         float _iaq_accuracy = 0.0f;
         float _pressure = 0.0f;
+        float _gas_resistance = 0.0f;
         unsigned long _lastRefresh;
         unsigned long _lastStateUpdate;
 

@@ -6,6 +6,7 @@ WebServer::WebServer(int port) {
     _server->on("/", std::bind(&WebServer::handle_root, this));
     _server->on("/get", std::bind(&WebServer::handle_get, this));
     _server->on("/reset", std::bind(&WebServer::handle_reset, this));
+    _server->on("/hardReset", std::bind(&WebServer::handle_hard_reset, this));
 
     _httpUpdater = new ESP8266HTTPUpdateServer(true);
     _httpUpdater->setup(_server);
@@ -36,16 +37,25 @@ void WebServer::handle_reset() {
     ESP.reset();
 }
 
+void WebServer::handle_hard_reset() {
+    aqSensors.eraseEEPROM();
+    _server->send(
+        200,
+        "text/plain",
+        "Calibration data erased.");
+}
+
 void WebServer::handle_get() {
     char resp[128];
 
     sprintf(resp,
-            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"iaq\":%.2f,\"iaq_accuracy\":%.2f}",
+            "{\"temp\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"iaq\":%.2f,\"iaq_accuracy\":%.2f,\"gasResistance\":%.0f}",
             aqSensors.getTemp(),
             aqSensors.getHumidity(),
             aqSensors.getPressure(),
             aqSensors.getIAQ(),
-            aqSensors.getIAQAccuracy());
+            aqSensors.getIAQAccuracy(),
+            aqSensors.getGasResistance());
 
     _server->send(200, "application/json", resp);
 }

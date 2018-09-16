@@ -13,7 +13,7 @@
 #include "WebServer.h"
 
 #define HTTP_PORT 80
-#define HOSTNAME "br-aq-monitor3"
+#define HOSTNAME "br-aq-monitor1"
 
 #define I2C_SCL D1
 #define I2C_SDA D2

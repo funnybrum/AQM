@@ -78,6 +78,7 @@ void AQSensors::loop() {
             _humidity = _iaqSensor.humidity;
             _iaq = _iaqSensor.iaqEstimate;
             _iaq_accuracy = _iaqSensor.iaqAccuracy;
+            _gas_resistance = _iaqSensor.gasResistance;
 
             _output = String(millis()/1000);
             _output += ",\t" + String(_iaqSensor.rawTemperature);
@@ -114,6 +115,10 @@ float AQSensors::getTemp() {
 
 float AQSensors::getPressure() {
     return _pressure;
+}
+
+float AQSensors::getGasResistance() {
+    return _gas_resistance;
 }
 
 // Helper function definitions
@@ -161,14 +166,18 @@ void AQSensors::loadState(void)
         _iaqSensor.setState(bsecState);
         checkIaqSensorStatus();
     } else {
-        // Erase the EEPROM with zeroes
-        Serial.println("Erasing EEPROM");
-
-        for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE + 1; i++)
-            EEPROM.write(i, 0);
-
-        EEPROM.commit();
+        this->eraseEEPROM();
     }
+}
+
+void AQSensors::eraseEEPROM() {
+    // Erase the EEPROM with zeroes
+    Serial.println("Erasing EEPROM");
+
+    for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE + 1; i++)
+        EEPROM.write(i, 0);
+
+    EEPROM.commit();
 }
 
 void AQSensors::updateState(void)
