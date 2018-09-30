@@ -26,6 +26,7 @@ class Settings {
         bool isDataValid();
     private:
         SettingsData data;
+        void writeToEEPROM();
 };
 
 extern Settings settings;

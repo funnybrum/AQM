@@ -7,12 +7,16 @@ void setup()
         delay(1);
     }
     ScanAndConnect();
-    webServer.begin();
+    settings.begin();
+    led.begin();
     aqSensors.begin();
+    webServer.begin();
 }
 
 void loop() {
     webServer.loop();
     aqSensors.loop();
+    settings.loop();
+    led.loop();
     delay(100);
 }

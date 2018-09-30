@@ -157,6 +157,7 @@ void AQSensors::loadState(void)
     if (settings.isDataValid()) {
         _iaqSensor.setState(settings.get()->sensorCalibration);
         checkIaqSensorStatus();
+        Serial.println("Settings applied.");
     }
 }
 

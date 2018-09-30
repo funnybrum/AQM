@@ -7,6 +7,8 @@ WebServer::WebServer(int port) {
     _server->on("/get", std::bind(&WebServer::handle_get, this));
     _server->on("/reset", std::bind(&WebServer::handle_reset, this));
     _server->on("/hardReset", std::bind(&WebServer::handle_hard_reset, this));
+    _server->on("/blink", std::bind(&WebServer::handle_blink, this));
+
 
     _httpUpdater = new ESP8266HTTPUpdateServer(true);
     _httpUpdater->setup(_server);
@@ -58,6 +60,21 @@ void WebServer::handle_get() {
             aqSensors.getGasResistance());
 
     _server->send(200, "application/json", resp);
+}
+
+void WebServer::handle_blink() {
+    led.set(255, 0, 0);
+    delay(500);
+    led.set(0, 255, 0);
+    delay(500);
+    led.set(0, 0, 255);
+    delay(500);
+    led.set(0, 0, 0);
+
+    _server->send(
+        200,
+        "text/plain",
+        "Just blinked!");
 }
 
 WebServer webServer = WebServer(HTTP_PORT);

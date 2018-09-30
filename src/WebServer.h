@@ -16,6 +16,7 @@ class WebServer {
       void handle_reset();
       void handle_get();
       void handle_hard_reset();
+      void handle_blink();
 };
 
 extern WebServer webServer;
