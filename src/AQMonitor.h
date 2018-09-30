@@ -11,6 +11,7 @@
 #include "WiFi.h"
 #include "AQSensors.h"
 #include "WebServer.h"
+#include "Settings.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor4"

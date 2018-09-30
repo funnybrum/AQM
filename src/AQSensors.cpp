@@ -6,7 +6,6 @@ AQSensors::AQSensors() {
 }
 
 void AQSensors::begin() {
-    EEPROM.begin(BSEC_MAX_STATE_BLOB_SIZE + 1); // 1st address for the length
     Wire.begin(I2C_SDA, I2C_SCL);
 
     // Init the sensor
@@ -155,29 +154,10 @@ void AQSensors::checkIaqSensorStatus(void)
 
 void AQSensors::loadState(void)
 {
-    if (EEPROM.read(0) == BSEC_MAX_STATE_BLOB_SIZE) {
-        // Existing state in EEPROM
-        Serial.println("Reading state from EEPROM");
-        uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] = {0};
-        for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++) {
-            bsecState[i] = EEPROM.read(i + 1);
-        }
-
-        _iaqSensor.setState(bsecState);
+    if (settings.isDataValid()) {
+        _iaqSensor.setState(settings.get()->sensorCalibration);
         checkIaqSensorStatus();
-    } else {
-        this->eraseEEPROM();
     }
-}
-
-void AQSensors::eraseEEPROM() {
-    // Erase the EEPROM with zeroes
-    Serial.println("Erasing EEPROM");
-
-    for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE + 1; i++)
-        EEPROM.write(i, 0);
-
-    EEPROM.commit();
 }
 
 void AQSensors::updateState(void)
@@ -196,18 +176,9 @@ void AQSensors::updateState(void)
 
     if (update) {
         _lastStateUpdate = millis();
-        uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] = {0};
-        _iaqSensor.getState(bsecState);
+        _iaqSensor.getState(settings.get()->sensorCalibration);
         checkIaqSensorStatus();
-
-        Serial.println("Writing state to EEPROM");
-
-        for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE ; i++) {
-            EEPROM.write(i + 1, bsecState[i]);
-        }
-
-        EEPROM.write(0, BSEC_MAX_STATE_BLOB_SIZE);
-        EEPROM.commit();
+        settings.save();
     }
 }
 

@@ -38,7 +38,7 @@ void WebServer::handle_reset() {
 }
 
 void WebServer::handle_hard_reset() {
-    aqSensors.eraseEEPROM();
+    settings.erase();
     _server->send(
         200,
         "text/plain",
