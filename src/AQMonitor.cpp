@@ -19,4 +19,5 @@ void loop() {
     settings.loop();
     led.loop();
     delay(100);
+    ESP.wdtDisable();
 }

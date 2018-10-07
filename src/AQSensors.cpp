@@ -11,7 +11,7 @@ void AQSensors::begin() {
     // Init the sensor
     _iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
 
-    _output = "\nBSEC library version " +
+    _output = "BSEC library version " +
         String(_iaqSensor.version.major) +
         "." +
         String(_iaqSensor.version.minor) +
@@ -72,9 +72,9 @@ void AQSensors::loop() {
 
             _lastRefresh = millis();
 
-            _temp = _iaqSensor.temperature;
+            _temp = _iaqSensor.temperature + (settings.get()->temperatureOffset * 0.1f);
+            _humidity = _iaqSensor.humidity + (settings.get()->humidityOffset * 0.1f);
             _pressure = _iaqSensor.pressure;
-            _humidity = _iaqSensor.humidity;
             _iaq = _iaqSensor.iaqEstimate;
             _iaq_accuracy = _iaqSensor.iaqAccuracy;
             _gas_resistance = _iaqSensor.gasResistance;
@@ -154,10 +154,16 @@ void AQSensors::checkIaqSensorStatus(void)
 
 void AQSensors::loadState(void)
 {
-    if (settings.isDataValid()) {
-        _iaqSensor.setState(settings.get()->sensorCalibration);
-        checkIaqSensorStatus();
-        Serial.println("Settings applied.");
+    uint8_t *state = settings.get()->sensorCalibration;
+    for (int i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++) {
+        // Check if we have non-zero calibration byte. If we do - the calibraiton
+        // data is valid and can be used.
+        if (state[i] != 0) {
+            _iaqSensor.setState(settings.get()->sensorCalibration);
+            checkIaqSensorStatus();
+            Serial.println("Settings applied.");
+            break;
+        }
     }
 }
 

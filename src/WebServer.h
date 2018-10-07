@@ -11,12 +11,17 @@ class WebServer {
     private:
       ESP8266WebServer *_server;
       ESP8266HTTPUpdateServer *_httpUpdater;
+
+      int8_t getBodyValue();
       
       void handle_root();
       void handle_reset();
       void handle_get();
       void handle_hard_reset();
       void handle_blink();
+      void handle_temp_offset();
+      void handle_humidity_offset();
+      void handle_hostname();
 };
 
 extern WebServer webServer;

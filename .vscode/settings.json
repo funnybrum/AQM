@@ -12,6 +12,10 @@
         "list": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "istream": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "limits": "cpp"
     }
 }
