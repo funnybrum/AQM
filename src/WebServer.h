@@ -12,7 +12,7 @@ class WebServer {
       ESP8266WebServer *_server;
       ESP8266HTTPUpdateServer *_httpUpdater;
 
-      int8_t getBodyValue();
+      int8_t getBodyValue(uint8_t currentValue);
       
       void handle_root();
       void handle_reset();

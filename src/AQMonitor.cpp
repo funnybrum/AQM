@@ -6,8 +6,10 @@ void setup()
     while (! Serial) {
         delay(1);
     }
-    ScanAndConnect();
     settings.begin();
+
+    ScanAndConnect();
+
     led.begin();
     aqSensors.begin();
     webServer.begin();

@@ -28,7 +28,17 @@ void ScanAndConnect() {
     if (strongestSSID.compareTo("") != 0) {
         Serial.printf("Connectiong to %s (%ddBm)\n", strongestSSID.c_str(), strongestSignalStrength);
 
-        WiFi.hostname(HOSTNAME);
+        const char* hostname;
+        
+        if (strlen(settings.get()->hostname) > 1) {
+            hostname = settings.get()->hostname;    
+        } else {
+            hostname = HOSTNAME;
+        }
+        Serial.print("Hostname is ");
+        Serial.println(hostname);
+
+        WiFi.hostname(hostname);
         WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
 
         // Timeout after 30 seconds of connection attempts.
