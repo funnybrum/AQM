@@ -11,6 +11,7 @@ void setup()
     led.begin();
     aqSensors.begin();
     webServer.begin();
+    systemCheck.begin();
 }
 
 void loop() {
@@ -18,6 +19,6 @@ void loop() {
     aqSensors.loop();
     settings.loop();
     led.loop();
+    systemCheck.loop();
     delay(100);
-    ESP.wdtDisable();
 }

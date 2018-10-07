@@ -31,13 +31,22 @@ void ScanAndConnect() {
         WiFi.hostname(HOSTNAME);
         WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
 
-        while (WiFi.status() != WL_CONNECTED) {
+        // Timeout after 30 seconds of connection attempts.
+        int timeout = 60; // 60 * 0.5 = 30 seconds. 
+        while (WiFi.status() != WL_CONNECTED and timeout > 0) {
+            timeout--;
             delay(500);
             Serial.print(".");
         }
 
-        Serial.print("\nConnected, ip address: ");
-        Serial.println(WiFi.localIP());
+        Serial.println();
+
+        if (timeout > 0) {
+            Serial.print("Connected, ip address: ");
+            Serial.println(WiFi.localIP());
+        } else {
+            Serial.print("Failed to connect in 30 seconds. Please, check the provided password.");
+        }
     } else {
         Serial.println("No known network found...");
     }
