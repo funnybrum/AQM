@@ -2,6 +2,7 @@
 #define _WEBSERVER_H_
 
 #include "AQMonitor.h"
+#include "WebPages.h"
 
 class WebServer {
     public:
@@ -9,19 +10,15 @@ class WebServer {
         void begin();
         void loop();
     private:
-      ESP8266WebServer *_server;
-      ESP8266HTTPUpdateServer *_httpUpdater;
+        ESP8266WebServer *_server;
+        ESP8266HTTPUpdateServer *_httpUpdater;
 
-      int8_t getBodyValue(uint8_t currentValue);
-      
-      void handle_root();
-      void handle_reset();
-      void handle_get();
-      void handle_hard_reset();
-      void handle_blink();
-      void handle_temp_offset();
-      void handle_humidity_offset();
-      void handle_hostname();
+        void handle_root();
+        void handle_get();
+        void handle_settings();
+        void handle_reset();
+        void handle_hard_reset();
+        void handle_blink();
 };
 
 extern WebServer webServer;
