@@ -36,10 +36,6 @@ void AQSensors::begin() {
     };
     _iaqSensor.setConfig(generic_33v_300s_4d);
 
-    // Sensor shows the temperature of the chip itself and this is usually above ambient. An offset
-    // can be configured to compensate for this. The offset depends on the PCB layout.
-    _iaqSensor.setTemperatureOffset(3.5f);
-
     checkIaqSensorStatus();
     loadState();
 
@@ -58,8 +54,12 @@ void AQSensors::begin() {
 }
 
 void AQSensors::loop() {
+    // Sensor shows the temperature of the chip itself and this is usually above ambient. An offset
+    // can be configured to compensate for this. The offset depends on the PCB layout.
+    _iaqSensor.setTemperatureOffset(settings.get()->temperatureOffset * -0.1f);
+
     bool newDataAvailable = _iaqSensor.run();
-    if (millis() - _lastRefresh > 1000 * 30) {
+    if (millis() - _lastRefresh > 1000 * 10) {
         if (!newDataAvailable) {
             // Sensor is running. Get its status and try next time.
             checkIaqSensorStatus();
@@ -72,7 +72,7 @@ void AQSensors::loop() {
 
             _lastRefresh = millis();
 
-            _temp = _iaqSensor.temperature + (settings.get()->temperatureOffset * 0.1f);
+            _temp = _iaqSensor.temperature;
             _humidity = _iaqSensor.humidity + (settings.get()->humidityOffset * 0.1f);
             _pressure = _iaqSensor.pressure;
             _iaq = _iaqSensor.iaqEstimate;

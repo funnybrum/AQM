@@ -118,15 +118,14 @@ void WebServer::handle_hard_reset() {
 
 void WebServer::handle_blink() {
     systemCheck.registerWebCall();
-    led.set(255, 0, 0);
-    delay(500);
-    led.set(0, 255, 0);
-    delay(500);
-    led.set(0, 0, 255);
-    delay(500);
-    led.set(0, 0, 0);
 
-    _server->send(200, "text/plain", "Just blinked!");
+    if (_server->hasArg("iaq")) {
+        float iaq = _server->arg("iaq").toFloat();
+        led.blink(iaq);
+        _server->send(200, "text/plain", "Just blinked!");
+    } else {
+        _server->send(400, "text/plain", "Missing iaq argument!");
+    }
 }
 
 WebServer webServer = WebServer(HTTP_PORT);
