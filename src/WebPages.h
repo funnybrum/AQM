@@ -23,11 +23,11 @@ const char CONFIG_PAGE[] PROGMEM = R"=====(
       <input type="text" name="blink_interval" value="%d"><br>
       <small><em>in seconds, 0 to disable blinking, max value - 3600</em></small><br>
       <br>
-      Gas sensor resistance at bad AQ:<br>
+      Gas sensor resistance at AQ 250:<br>
       <input type="text" name="bad_aq_res" value="%d"><br>
       <small><em>in kohm</em></small><br>
       <br>
-      Gas sensor resistance at good AQ:<br>
+      Gas sensor resistance at AQ 25:<br>
       <input type="text" name="good_aq_res" value="%d"><br>
       <small><em>in kohm</em></small><br>
       <br>
