@@ -103,7 +103,6 @@
 /** BME680 configuration macros */
 /** Enable or un-comment the macro to provide floating point data output */
 #ifndef BME680_FLOAT_POINT_COMPENSATION
-// Commenting the line below is resulting in "BSEC error code: -2"...
 #define BME680_FLOAT_POINT_COMPENSATION
 #endif
 

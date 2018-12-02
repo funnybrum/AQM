@@ -47,8 +47,8 @@
 
 #include "bsec.h"
 
-TwoWire* Bsec::i2c_obj = NULL;
-SPIClass* Bsec::spi_obj = NULL;
+TwoWire* Bsec::wireObj = NULL;
+SPIClass* Bsec::spiObj = NULL;
 
 /**
  * @brief Constructor
@@ -98,8 +98,8 @@ void Bsec::begin(uint8_t i2cAddr, TwoWire &i2c)
 	_bme680.amb_temp = 25;
 	_bme680.power_mode = BME680_FORCED_MODE;
 
-	Bsec::i2c_obj = &i2c;
-	Bsec::i2c_obj->begin();
+	Bsec::wireObj = &i2c;
+	Bsec::wireObj->begin();
 
 	beginCommon();
 }
@@ -119,8 +119,8 @@ void Bsec::begin(uint8_t chipSelect, SPIClass &spi)
 
 	pinMode(chipSelect, OUTPUT);
 	digitalWrite(chipSelect, HIGH);
-	Bsec::spi_obj = &spi;
-	Bsec::spi_obj->begin();
+	Bsec::spiObj = &spi;
+	Bsec::spiObj->begin();
 
 	beginCommon();
 }
@@ -130,18 +130,11 @@ void Bsec::begin(uint8_t chipSelect, SPIClass &spi)
  */
 void Bsec::beginCommon(void)
 {
-	bme680Status = bme680_init(&_bme680);
-	if (bme680Status != BME680_OK) {
-		return;
-	}
-
 	status = bsec_init();
-	if (status != BSEC_OK)
-		return;
 
 	getVersion();
-	if (status != BSEC_OK)
-		return;
+	
+	bme680Status = bme680_init(&_bme680);
 }
 
 /**
@@ -233,7 +226,7 @@ void Bsec::setConfig(const uint8_t *state)
 {
 	uint8_t workBuffer[BSEC_MAX_PROPERTY_BLOB_SIZE];
 
-	status = bsec_set_configuration(state, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, BSEC_MAX_PROPERTY_BLOB_SIZE);
+	status = bsec_set_configuration(state, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, sizeof(workBuffer));
 }
 
 /* Private functions */
@@ -243,7 +236,7 @@ void Bsec::setConfig(const uint8_t *state)
  */
 void Bsec::getVersion(void)
 {
-	status = bsec_get_version(&version);
+	bsec_get_version(&version);
 }
 
 /**
@@ -306,9 +299,21 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 
 			for (uint8_t i = 0; i < nOutputs; i++) {
 				switch (_outputs[i].sensor_id) {
-					case BSEC_OUTPUT_IAQ_ESTIMATE:
+					case BSEC_OUTPUT_IAQ:
 						iaqEstimate = _outputs[i].signal;
 						iaqAccuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_STATIC_IAQ:
+						staticIaq = _outputs[i].signal;
+						staticIaqAccuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_CO2_EQUIVALENT:
+						co2Equivalent = _outputs[i].signal;
+						co2Accuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_BREATH_VOC_EQUIVALENT:
+						breathVocEquivalent = _outputs[i].signal;
+						breathVocAccuracy = _outputs[i].accuracy;
 						break;
 					case BSEC_OUTPUT_RAW_TEMPERATURE:
 						rawTemperature = _outputs[i].signal;
@@ -333,6 +338,14 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 						break;
 					case BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY:
 						humidity = _outputs[i].signal;
+						break;
+					case BSEC_OUTPUT_COMPENSATED_GAS:
+						compGasValue = _outputs[i].signal;
+						compGasAccuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_GAS_PERCENTAGE:
+						gasPercentage = _outputs[i].signal;
+						gasPercentageAcccuracy = _outputs[i].accuracy;
 						break;
 					default:
 						break;
@@ -376,6 +389,16 @@ void Bsec::zeroOutputs(void)
 	runInStatus = 0.0f;
 	iaqEstimate = 0.0f;
 	iaqAccuracy = 0;
+	staticIaq = 0.0f;
+	staticIaqAccuracy = 0;
+	co2Equivalent = 0.0f;
+	co2Accuracy = 0;
+	breathVocEquivalent = 0.0f;
+	breathVocAccuracy = 0;
+	compGasValue = 0.0f;
+	compGasAccuracy = 0;
+	gasPercentage = 0.0f;
+	gasPercentageAcccuracy = 0;
 }
 
 /**
@@ -410,13 +433,13 @@ int8_t Bsec::i2cRead(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint16_t 
 {
 	uint16_t i;
 	int8_t rslt = 0;
-	if(Bsec::i2c_obj) {
-		Bsec::i2c_obj->beginTransmission(devId);
-		Bsec::i2c_obj->write(regAddr);
-		rslt = Bsec::i2c_obj->endTransmission();
-		Bsec::i2c_obj->requestFrom((int) devId, (int) length);
-		for (i = 0; (i < length) && Bsec::i2c_obj->available(); i++) {
-			regData[i] = Bsec::i2c_obj->read();
+	if(Bsec::wireObj) {
+		Bsec::wireObj->beginTransmission(devId);
+		Bsec::wireObj->write(regAddr);
+		rslt = Bsec::wireObj->endTransmission();
+		Bsec::wireObj->requestFrom((int) devId, (int) length);
+		for (i = 0; (i < length) && Bsec::wireObj->available(); i++) {
+			regData[i] = Bsec::wireObj->read();
 		}
 	} else {
 		rslt = -1;
@@ -431,13 +454,13 @@ int8_t Bsec::i2cWrite(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint16_t
 {
 	uint16_t i;
 	int8_t rslt = 0;
-	if(Bsec::i2c_obj) {
-		Bsec::i2c_obj->beginTransmission(devId);
-		Bsec::i2c_obj->write(regAddr);
+	if(Bsec::wireObj) {
+		Bsec::wireObj->beginTransmission(devId);
+		Bsec::wireObj->write(regAddr);
 		for (i = 0; i < length; i++) {
-			Bsec::i2c_obj->write(regData[i]);
+			Bsec::wireObj->write(regData[i]);
 		}
-		rslt = Bsec::i2c_obj->endTransmission();
+		rslt = Bsec::wireObj->endTransmission();
 	} else {
 		rslt = -1;
 	}
@@ -451,17 +474,17 @@ int8_t Bsec::i2cWrite(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint16_t
 int8_t Bsec::spiTransfer(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint16_t length)
 {
 	int8_t rslt = 0;
-	if(Bsec::spi_obj) {
-		Bsec::spi_obj->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0)); // Can be upto 10MHz
+	if(Bsec::spiObj) {
+		Bsec::spiObj->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0)); // Can be upto 10MHz
 	
 		digitalWrite(devId, LOW);
 
-		Bsec::spi_obj->transfer(regAddr); // Write the register address, ignore the return
+		Bsec::spiObj->transfer(regAddr); // Write the register address, ignore the return
 		for (uint16_t i = 0; i < length; i++)
-			regData[i] = Bsec::spi_obj->transfer(regData[i]);
+			regData[i] = Bsec::spiObj->transfer(regData[i]);
 
 		digitalWrite(devId, HIGH);
-		Bsec::spi_obj->endTransaction();
+		Bsec::spiObj->endTransaction();
 	} else {
 		rslt = -1;
 	}
