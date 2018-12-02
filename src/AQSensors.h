@@ -14,6 +14,7 @@ class AQSensors {
         float getTemp();
         float getHumidity();
         float getIAQ();
+        float getCalculatedIAQ();
         float getIAQAccuracy();
         float getPressure();
         float getGasResistance();
@@ -24,6 +25,7 @@ class AQSensors {
         float _iaq_accuracy = 0.0f;
         float _pressure = 0.0f;
         float _gas_resistance = 0.0f;
+        float _calculated_iaq = 0.0f;
         unsigned long _lastRefresh;
         unsigned long _lastStateUpdate;
 

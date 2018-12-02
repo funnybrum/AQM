@@ -10,6 +10,10 @@ struct SettingsData {
     int8_t temperatureOffset;
     int8_t humidityOffset;
     char hostname[64];
+    uint16_t blinkInterval;
+    int16_t badAQResistance;
+    int16_t goodAQResistance;
+
 };
 
 #define DATA_SIZE sizeof(SettingsData)

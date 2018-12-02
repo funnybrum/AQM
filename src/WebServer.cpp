@@ -43,7 +43,8 @@ void WebServer::handle_get() {
               aqSensors.getPressure(),
               aqSensors.getIAQ(),
               aqSensors.getIAQAccuracy(),
-              aqSensors.getGasResistance());
+              aqSensors.getGasResistance(),
+              aqSensors.getCalculatedIAQ());
     _server->send(200, "application/json", resp);
 }
 
@@ -89,6 +90,30 @@ void WebServer::handle_settings() {
         }
     }
 
+    if (_server->hasArg("blink_interval")) {
+        int val = _server->arg("blink_interval").toInt();
+        if (0 <= val && val <= 3600) {
+            settings.get()->blinkInterval = val;
+            save = true;
+        }
+    }
+
+    if (_server->hasArg("good_aq_res")) {
+        int val = _server->arg("good_aq_res").toInt();
+        if (0 <= val && val <= 2000) {
+            settings.get()->goodAQResistance = val;
+            save = true;
+        }
+    }
+
+    if (_server->hasArg("bad_aq_res")) {
+        int val = _server->arg("bad_aq_res").toInt();
+        if (0 <= val && val <= 2000) {
+            settings.get()->badAQResistance = val;
+            save = true;
+        }
+    }
+
     if (save) {
         settings.save();        
     }
@@ -99,7 +124,10 @@ void WebServer::handle_settings() {
         CONFIG_PAGE,
         settings.get()->hostname, 
         settings.get()->temperatureOffset, 
-        settings.get()->humidityOffset);
+        settings.get()->humidityOffset,
+        settings.get()->blinkInterval,
+        settings.get()->badAQResistance,
+        settings.get()->goodAQResistance);
     _server->send(200, "text/html", resp);
 }
 

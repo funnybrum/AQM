@@ -11,8 +11,8 @@ void LED::begin() {
 }
 
 void LED::loop() {
-    if (millis() - _lastBlink > 1000 * 60) {
-        // Each 10 seconds - blink with color showing the air quality.
+    if (settings.get()->blinkInterval > 0 &&
+        millis() - _lastBlink > 1000 * settings.get()->blinkInterval) {
         blink(aqSensors.getIAQ());
     }
 

@@ -19,6 +19,18 @@ const char CONFIG_PAGE[] PROGMEM = R"=====(
       <input type="text" name="humidity_offset" value="%d"><br>
       <small><em>in 0.1 percents, from -125 to 125</em></small><br>
       <br>
+      Blinik interval:<br>
+      <input type="text" name="blink_interval" value="%d"><br>
+      <small><em>in seconds, 0 to disable blinking, max value - 3600</em></small><br>
+      <br>
+      Gas sensor resistance at bad AQ:<br>
+      <input type="text" name="bad_aq_res" value="%d"><br>
+      <small><em>in kohm</em></small><br>
+      <br>
+      Gas sensor resistance at good AQ:<br>
+      <input type="text" name="good_aq_res" value="%d"><br>
+      <small><em>in kohm</em></small><br>
+      <br>
       <input type="submit" value="Save">
     </form> 	
   </BODY>
@@ -31,5 +43,6 @@ const char GET_JSON[] PROGMEM = R"=====({
   "pressure":%.2f,
   "iaq":%.2f,
   "iaq_accuracy":%.2f,
-  "gas_resistance":%.0f
+  "gas_resistance":%.0f,
+  "calculated_iaq":%.2f
 })=====";

@@ -79,6 +79,18 @@ void AQSensors::loop() {
             _iaq_accuracy = _iaqSensor.iaqAccuracy;
             _gas_resistance = _iaqSensor.gasResistance;
 
+            // Some calculation with fixed values for good and bad air quality sensor resistance.
+            // Bad sensor resistance should be the value for AQ=250, good for AQ=25. Calculations
+            // are using linear interpolation to get the AQ value.
+            float dRper1AQ = 1000 * (settings.get()->goodAQResistance - settings.get()->badAQResistance) / 225.0f;
+            if (_gas_resistance - 1000 * settings.get()->badAQResistance == 0) {
+                _calculated_iaq = 250.0f;
+            } else {
+                _calculated_iaq = 250.0f - (_gas_resistance - 1000 * settings.get()->badAQResistance) / dRper1AQ;
+            }
+            _calculated_iaq = min(_calculated_iaq, 500.0f);
+            _calculated_iaq = max(_calculated_iaq, 0.0f);
+
             _output = String(millis()/1000);
             _output += ",\t" + String(_iaqSensor.rawTemperature);
             _output += ",\t" + String(_iaqSensor.pressure);
@@ -110,6 +122,10 @@ float AQSensors::getHumidity() {
 
 float AQSensors::getTemp() {
     return _temp;
+}
+
+float AQSensors::getCalculatedIAQ() {
+    return _calculated_iaq;
 }
 
 float AQSensors::getPressure() {
