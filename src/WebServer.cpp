@@ -64,7 +64,7 @@ void WebServer::handle_settings() {
     bool save = false;
 
     if (_server->hasArg("hostname")) {
-        String new_hostname = _server->arg("plain");
+        String new_hostname = _server->arg("hostname");
         unsigned int max_hostname_length = sizeof(settings.get()->hostname) - 1;
 
         if (new_hostname.length() > 2 && new_hostname.length() < max_hostname_length) {
