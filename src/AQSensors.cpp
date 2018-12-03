@@ -58,7 +58,7 @@ void AQSensors::begin() {
         BSEC_OUTPUT_GAS_PERCENTAGE
     };
 
-    _iaqSensor.updateSubscription(sensorList, 7, BSEC_SAMPLE_RATE_LP);
+    _iaqSensor.updateSubscription(sensorList, 12, BSEC_SAMPLE_RATE_LP);
     checkIaqSensorStatus();
 }
 
