@@ -43,7 +43,7 @@ void AQSensors::begin() {
     checkIaqSensorStatus();
     loadState();
 
-    bsec_virtual_sensor_t sensorList[10] = {
+    bsec_virtual_sensor_t sensorList[12] = {
         BSEC_OUTPUT_RAW_TEMPERATURE,
         BSEC_OUTPUT_RAW_PRESSURE,
         BSEC_OUTPUT_RAW_HUMIDITY,
@@ -53,7 +53,9 @@ void AQSensors::begin() {
         BSEC_OUTPUT_CO2_EQUIVALENT,         /*!< co2 equivalent estimate [ppm] */   
         BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,  /*!< breath VOC concentration estimate [ppm] */    	
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+        BSEC_OUTPUT_COMPENSATED_GAS,
+        BSEC_OUTPUT_GAS_PERCENTAGE
     };
 
     _iaqSensor.updateSubscription(sensorList, 7, BSEC_SAMPLE_RATE_LP);
@@ -86,6 +88,17 @@ void AQSensors::loop() {
             _iaq_accuracy = _iaqSensor.iaqAccuracy;
             _gas_resistance = _iaqSensor.gasResistance;
 
+            _static_iaq_accuracy = _iaqSensor.staticIaqAccuracy;
+            _static_iaq = _iaqSensor.staticIaq;
+            _co2_accuracy = _iaqSensor.co2Accuracy;
+            _co2_equivalent = _iaqSensor.co2Equivalent;
+            _breath_voc_accuracy = _iaqSensor.breathVocAccuracy;
+            _breath_voc_equivalent = _iaqSensor.breathVocEquivalent;
+            _comp_gas_accuracy = _iaqSensor.compGasAccuracy;
+            _comp_gas_value = _iaqSensor.compGasValue;
+            _gas_percentage_acccuracy = _iaqSensor.gasPercentageAcccuracy;
+            _gas_percentage = _iaqSensor.gasPercentage;
+
             // Some calculation with fixed values for good and bad air quality sensor resistance.
             // Bad sensor resistance should be the value for AQ=250, good for AQ=25. Calculations
             // are using linear interpolation to get the AQ value.
@@ -115,12 +128,52 @@ void AQSensors::loop() {
     }
 }
 
-float AQSensors::getIAQAccuracy() {
+uint8_t AQSensors::getIAQAccuracy() {
     return _iaq_accuracy;
 }
 
 float AQSensors::getIAQ() {
     return _iaq;
+}
+
+uint8_t AQSensors::getStaticIaqAccuracy() {
+    return _static_iaq_accuracy;
+}
+
+float AQSensors::getStaticIaq() {
+    return _static_iaq;
+}
+
+uint8_t AQSensors::getCo2Accuracy() {
+    return _co2_accuracy;
+}
+
+float AQSensors::getCo2Equivalent() {
+    return _co2_equivalent;
+}
+
+uint8_t AQSensors::getBreathVocAccuracy() {
+    return _breath_voc_accuracy;
+}
+
+float AQSensors::getBreathVocEquivalent() {
+    return _breath_voc_equivalent;
+}
+
+uint8_t AQSensors::getCompGasAccuracy() {
+    return _comp_gas_accuracy;
+}
+
+float AQSensors::getCompGasValue() {
+    return _comp_gas_value;
+}
+
+uint8_t AQSensors::getGasPercentageAcccuracy() {
+    return _gas_percentage_acccuracy;
+}
+
+float AQSensors::getGasPercentage() {
+    return _gas_percentage;
 }
 
 float AQSensors::getHumidity() {

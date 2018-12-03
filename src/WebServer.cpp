@@ -44,7 +44,17 @@ void WebServer::handle_get() {
               aqSensors.getIAQ(),
               aqSensors.getIAQAccuracy(),
               aqSensors.getGasResistance(),
-              aqSensors.getCalculatedIAQ());
+              aqSensors.getCalculatedIAQ(),
+              aqSensors.getStaticIaqAccuracy(),
+              aqSensors.getStaticIaq(),
+              aqSensors.getCo2Accuracy(),
+              aqSensors.getCo2Equivalent(),
+              aqSensors.getBreathVocAccuracy(),
+              aqSensors.getBreathVocEquivalent(),
+              aqSensors.getCompGasAccuracy(),
+              aqSensors.getCompGasValue(),
+              aqSensors.getGasPercentageAcccuracy(),
+              aqSensors.getGasPercentage());
     _server->send(200, "application/json", resp);
 }
 

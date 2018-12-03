@@ -42,7 +42,17 @@ const char GET_JSON[] PROGMEM = R"=====({
   "humidity":%.2f,
   "pressure":%.2f,
   "iaq":%.2f,
-  "iaq_accuracy":%.2f,
+  "iaq_accuracy":%d,
   "gas_resistance":%.0f,
-  "calculated_iaq":%.2f
+  "calculated_iaq":%.2f,
+  "static_iaq_accuracy":%d,
+  "static_iaq":%.2f,
+  "co2_accuracy":%d,
+  "co2_equivalent":%.2f,
+  "breath_voc_accuracy":%d,
+  "breath_voc_equivalent":%.2f,
+  "comp_gas_accuracy":%d,
+  "comp_gas_value":%.2f,
+  "gas_percentage_acccuracy":%d,
+  "gas_percentage":%.2f
 })=====";
