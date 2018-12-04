@@ -9,6 +9,7 @@ WebServer::WebServer(int port) {
     _server->on("/reset", std::bind(&WebServer::handle_reset, this));
     _server->on("/hard-reset", std::bind(&WebServer::handle_hard_reset, this));
     _server->on("/blink", std::bind(&WebServer::handle_blink, this));
+    _server->on("/logs", std::bind(&WebServer::handle_logs, this));
 
     _httpUpdater = new ESP8266HTTPUpdateServer(true);
     _httpUpdater->setup(_server);
@@ -165,6 +166,11 @@ void WebServer::handle_blink() {
     } else {
         _server->send(400, "text/plain", "Missing iaq argument!");
     }
+}
+
+void WebServer::handle_logs() {
+    systemCheck.registerWebCall();
+    _server->send(200, "text/html", logger.getLogs());
 }
 
 WebServer webServer = WebServer(HTTP_PORT);

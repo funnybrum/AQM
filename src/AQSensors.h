@@ -34,7 +34,6 @@ class AQSensors {
         unsigned long _lastStateUpdate;
 
         Bsec _iaqSensor = Bsec();
-        String _output;
 
         // Helper function definitions
         void checkIaqSensorStatus(void);

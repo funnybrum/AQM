@@ -11,13 +11,11 @@ void AQSensors::begin() {
     // Init the sensor
     _iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
 
-    _output = "BSEC library version " +
-        String(_iaqSensor.version.major) +
-        "." +
-        String(_iaqSensor.version.minor) +
-        "." + String(_iaqSensor.version.major_bugfix) +
-        "." + String(_iaqSensor.version.minor_bugfix);
-    Serial.println(_output);
+    logger.log("BSEC library version %d.%d.%d.%d",
+               _iaqSensor.version.major,
+               _iaqSensor.version.minor,
+               _iaqSensor.version.major_bugfix,
+               _iaqSensor.version.minor_bugfix);
 
     // As per the documentation - 'The default configuration (after calling bsec_init), to which
     // BSEC will be configured, is "generic_18v_300s_4d"'. However this firmware is for PCB that
@@ -66,7 +64,7 @@ void AQSensors::begin() {
     checkIaqSensorStatus();
     loadState();
 
-    bsec_virtual_sensor_t sensorList[12] = {
+    bsec_virtual_sensor_t sensorList[8] = {
         BSEC_OUTPUT_RAW_TEMPERATURE,
         BSEC_OUTPUT_RAW_PRESSURE,
         BSEC_OUTPUT_RAW_HUMIDITY,
@@ -77,7 +75,7 @@ void AQSensors::begin() {
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
     };
 
-    _iaqSensor.updateSubscription(sensorList, 12, BSEC_SAMPLE_RATE_LP);
+    _iaqSensor.updateSubscription(sensorList, 8, BSEC_SAMPLE_RATE_LP);
     checkIaqSensorStatus();
 }
 
@@ -92,12 +90,6 @@ void AQSensors::loop() {
             // Sensor is running. Get its status and try next time.
             checkIaqSensorStatus();
         } else {
-            if (_lastRefresh == 0) {
-                // Print the header
-                _output = "sec,\tr_temp,\tpressure,\tr_hum,\tgas (Ohm),\tIAQ,\t\tacc,\ttemp,\thumidity";
-                Serial.println(_output);
-            }
-
             _lastRefresh = millis();
 
             _temp = _iaqSensor.temperature;
@@ -120,19 +112,6 @@ void AQSensors::loop() {
             }
             _calculated_iaq = min(_calculated_iaq, 500.0f);
             _calculated_iaq = max(_calculated_iaq, 0.0f);
-
-            _output = String(millis()/1000);
-            _output += ",\t" + String(_iaqSensor.rawTemperature);
-            _output += ",\t" + String(_iaqSensor.pressure);
-            _output += ",\t" + String(_iaqSensor.rawHumidity);
-            _output += ",\t" + String(_iaqSensor.gasResistance);
-            _output += ",\t" + String(_iaqSensor.iaqEstimate);
-            _output += ",\t\t" + String(_iaqSensor.iaqAccuracy);
-            _output += ",\t" + String(_iaqSensor.temperature);
-            _output += ",\t" + String(_iaqSensor.humidity);
-
-            Serial.println(_output);
-
             updateState();
         }
     }
@@ -175,29 +154,23 @@ void AQSensors::checkIaqSensorStatus(void)
 {
     if (_iaqSensor.status != BSEC_OK) {
         if (_iaqSensor.status < BSEC_OK) {
-            _output = "BSEC error code : " + String(_iaqSensor.status);
-            Serial.println(_output);
+            logger.log("BSEC error code : %d", _iaqSensor.status);
             for (;;) {
-                Serial.println(_output);
                 delay(1000);
             }
         } else {
-            _output = "BSEC warning code : " + String(_iaqSensor.status);
-            Serial.println(_output);
+            logger.log("BSEC warning code : %d", _iaqSensor.status);
         }
     }
 
     if (_iaqSensor.bme680Status != BME680_OK) {
         if (_iaqSensor.bme680Status < BME680_OK) {
-            _output = "BME680 error code : " + String(_iaqSensor.bme680Status);
-            Serial.println(_output);
+            logger.log("BME680 error code : %d", _iaqSensor.bme680Status);
             for (;;) {
-                Serial.println(_output);
                 delay(1000);
             }
         } else {
-            _output = "BME680 warning code : " + String(_iaqSensor.bme680Status);
-            Serial.println(_output);
+            logger.log("BME680 warning code : %d",_iaqSensor.bme680Status);
         }
     }
 }
@@ -211,7 +184,7 @@ void AQSensors::loadState(void)
         if (state[i] != 0) {
             _iaqSensor.setState(settings.get()->sensorCalibration);
             checkIaqSensorStatus();
-            Serial.println("Settings applied.");
+            logger.log("Settings applied.");
             break;
         }
     }

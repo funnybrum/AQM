@@ -55,13 +55,7 @@ void LED::blink(float iaq) {
 
         _targetGreen *= 0.1f;
 
-        Serial.print("Blinking to ");
-        Serial.print(_targetRed);
-        Serial.print(" ");
-        Serial.print(_targetGreen);
-        Serial.print(" ");
-        Serial.println(_targetBlue);
-
+        logger.log("Blinking to %d, %d, %d", _targetRed, _targetGreen, _targetBlue);
 }
 
 LED led = LED();
