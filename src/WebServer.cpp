@@ -41,20 +41,11 @@ void WebServer::handle_get() {
               aqSensors.getTemp(),
               aqSensors.getHumidity(),
               aqSensors.getPressure(),
-              aqSensors.getIAQ(),
-              aqSensors.getIAQAccuracy(),
               aqSensors.getGasResistance(),
-              aqSensors.getCalculatedIAQ(),
-              aqSensors.getStaticIaqAccuracy(),
+              aqSensors.getAccuracy(),
+              aqSensors.getIAQ(),
               aqSensors.getStaticIaq(),
-              aqSensors.getCo2Accuracy(),
-              aqSensors.getCo2Equivalent(),
-              aqSensors.getBreathVocAccuracy(),
-              aqSensors.getBreathVocEquivalent(),
-              aqSensors.getCompGasAccuracy(),
-              aqSensors.getCompGasValue(),
-              aqSensors.getGasPercentageAcccuracy(),
-              aqSensors.getGasPercentage());
+              aqSensors.getCalculatedIAQ());
     _server->send(200, "application/json", resp);
 }
 
@@ -100,6 +91,14 @@ void WebServer::handle_settings() {
         }
     }
 
+    if (_server->hasArg("calibration_period")) {
+        int val = _server->arg("calibration_period").toInt();
+        if (val == 4 or val == 28) {
+            settings.get()->calibrationPeriod = val;
+            save = true;
+        }
+    }
+
     if (_server->hasArg("blink_interval")) {
         int val = _server->arg("blink_interval").toInt();
         if (0 <= val && val <= 3600) {
@@ -135,6 +134,8 @@ void WebServer::handle_settings() {
         settings.get()->hostname, 
         settings.get()->temperatureOffset, 
         settings.get()->humidityOffset,
+        (settings.get()->calibrationPeriod != 28)?"selected":"",
+        (settings.get()->calibrationPeriod == 28)?"selected":"",
         settings.get()->blinkInterval,
         settings.get()->badAQResistance,
         settings.get()->goodAQResistance);
@@ -143,7 +144,7 @@ void WebServer::handle_settings() {
 
 void WebServer::handle_reset() {
     systemCheck.registerWebCall();
-    _server->send(200);
+    _server->send(200, "text/plain", "Restarting...");
     delay(1000);
     ESP.reset();
 }

@@ -2,9 +2,9 @@
 
 const char CONFIG_PAGE[] PROGMEM = R"=====(
 <HTML>
-	<HEAD>
+  <HEAD>
       <TITLE>Air quality monitor</TITLE>
-	</HEAD>
+  </HEAD>
   <BODY>
     <form action="/settings" method="get">
       Hostname:<br>
@@ -19,6 +19,13 @@ const char CONFIG_PAGE[] PROGMEM = R"=====(
       <input type="text" name="humidity_offset" value="%d"><br>
       <small><em>in 0.1 percents, from -125 to 125</em></small><br>
       <br>
+      Calibration period:<br>
+      <select name="calibration_period">
+        <option value="4" %s>4 days</option>
+        <option value="28" %s>28 days</option>
+      </select><br>
+      <small><em>Period over which the sensor will recalibrate its IAQ values (requires restart)</em></small><br>
+      <br>
       Blinik interval:<br>
       <input type="text" name="blink_interval" value="%d"><br>
       <small><em>in seconds, 0 to disable blinking, max value - 3600</em></small><br>
@@ -32,7 +39,10 @@ const char CONFIG_PAGE[] PROGMEM = R"=====(
       <small><em>in kohm</em></small><br>
       <br>
       <input type="submit" value="Save">
-    </form> 	
+      <a href="/reset">
+        <button type="button">Restart</button>
+      </a>
+    </form>
   </BODY>
 </HTML>
 )=====";
@@ -41,18 +51,9 @@ const char GET_JSON[] PROGMEM = R"=====({
   "temp":%.2f,
   "humidity":%.2f,
   "pressure":%.2f,
-  "iaq":%.2f,
-  "iaq_accuracy":%d,
   "gas_resistance":%.0f,
-  "calculated_iaq":%.2f,
-  "static_iaq_accuracy":%d,
+  "iaq_accuracy":%d,
+  "iaq":%.2f,
   "static_iaq":%.2f,
-  "co2_accuracy":%d,
-  "co2_equivalent":%.2f,
-  "breath_voc_accuracy":%d,
-  "breath_voc_equivalent":%.2f,
-  "comp_gas_accuracy":%d,
-  "comp_gas_value":%.2f,
-  "gas_percentage_acccuracy":%d,
-  "gas_percentage":%.2f
+  "calculated_iaq":%.2f
 })=====";

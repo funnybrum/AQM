@@ -13,6 +13,7 @@ struct SettingsData {
     uint16_t blinkInterval;
     int16_t badAQResistance;
     int16_t goodAQResistance;
+    uint8_t calibrationPeriod;
 
 };
 

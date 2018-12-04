@@ -21,7 +21,8 @@ void AQSensors::begin() {
 
     // As per the documentation - 'The default configuration (after calling bsec_init), to which
     // BSEC will be configured, is "generic_18v_300s_4d"'. However this firmware is for PCB that
-    // works on 3.3V, so - the default config is overridden with the generic_33v_300s_4d one.
+    // works on 3.3V, so - the default config is overridden the generic_33v_300s_4d or the
+    // generic_33v_300s_28d.
     const uint8_t generic_33v_300s_4d[BSEC_MAX_PROPERTY_BLOB_SIZE] = {
         1,7,4,1,61,0,0,0,0,0,0,0,174,1,0,0,48,0,1,0,137,65,0,63,205,204,204,62,0,0,64,63,205,204,
         204,62,0,0,225,68,0,192,168,71,64,49,119,76,0,0,0,0,0,80,5,95,0,0,0,0,0,0,0,0,28,0,2,0,0,
@@ -38,7 +39,29 @@ void AQSensors::begin() {
         255,255,255,255,255,255,255,255,220,5,220,5,220,5,255,255,255,255,255,255,220,5,220,5,255,
         255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
         255,255,255,255,255,255,255,255,255,48,117,0,0,0,0,125,70,0,0};
-    _iaqSensor.setConfig(generic_33v_300s_4d);
+
+    const uint8_t generic_33v_300s_28d[BSEC_MAX_PROPERTY_BLOB_SIZE] =  {
+        1,7,4,1,61,0,0,0,0,0,0,0,174,1,0,0,48,0,1,0,137,65,0,63,205,204,204,62,0,0,64,63,205,204,
+        204,62,0,0,225,68,0,168,19,73,64,49,119,76,0,0,0,0,0,80,5,95,0,0,0,0,0,0,0,0,28,0,2,0,0,
+        244,1,225,0,25,0,0,128,64,0,0,32,65,144,1,0,0,112,65,0,0,0,63,16,0,3,0,10,215,163,60,10,
+        215,35,59,10,215,35,59,9,0,5,0,0,0,0,0,1,88,0,9,0,229,208,34,62,0,0,0,0,0,0,0,0,218,27,
+        156,62,225,11,67,64,0,0,160,64,0,0,0,0,0,0,0,0,94,75,72,189,93,254,159,64,66,62,160,191,0,
+        0,0,0,0,0,0,0,33,31,180,190,138,176,97,64,65,241,99,190,0,0,0,0,0,0,0,0,167,121,71,61,165,
+        189,41,192,184,30,189,64,12,0,10,0,0,0,0,0,0,0,0,0,229,0,254,0,2,1,5,48,117,100,0,44,1,112,
+        23,151,7,132,3,197,0,92,4,144,1,64,1,64,1,144,1,48,117,48,117,48,117,48,117,100,0,100,0,
+        100,0,48,117,48,117,48,117,100,0,100,0,48,117,48,117,100,0,100,0,100,0,100,0,48,117,48,117,
+        48,117,100,0,100,0,100,0,48,117,48,117,100,0,100,0,44,1,44,1,44,1,44,1,44,1,44,1,44,1,44,1,
+        44,1,44,1,44,1,44,1,44,1,44,1,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,8,7,112,
+        23,112,23,112,23,112,23,112,23,112,23,112,23,112,23,112,23,112,23,112,23,112,23,112,23,112,
+        23,255,255,255,255,255,255,255,255,220,5,220,5,220,5,255,255,255,255,255,255,220,5,220,5,
+        255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+        255,255,255,255,255,255,255,255,255,255,48,117,0,0,0,0,160,82,0,0};
+
+    if (settings.get()->calibrationPeriod != 28) {
+        _iaqSensor.setConfig(generic_33v_300s_4d);
+    } else {
+        _iaqSensor.setConfig(generic_33v_300s_28d);
+    }
 
     checkIaqSensorStatus();
     loadState();
@@ -50,12 +73,8 @@ void AQSensors::begin() {
         BSEC_OUTPUT_RAW_GAS,
         BSEC_OUTPUT_IAQ,
         BSEC_OUTPUT_STATIC_IAQ,             /*!< Unscaled indoor-air-quality estimate */ 
-        BSEC_OUTPUT_CO2_EQUIVALENT,         /*!< co2 equivalent estimate [ppm] */   
-        BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,  /*!< breath VOC concentration estimate [ppm] */    	
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
-        BSEC_OUTPUT_COMPENSATED_GAS,
-        BSEC_OUTPUT_GAS_PERCENTAGE
     };
 
     _iaqSensor.updateSubscription(sensorList, 12, BSEC_SAMPLE_RATE_LP);
@@ -84,20 +103,11 @@ void AQSensors::loop() {
             _temp = _iaqSensor.temperature;
             _humidity = _iaqSensor.humidity + (settings.get()->humidityOffset * 0.1f);
             _pressure = _iaqSensor.pressure;
-            _iaq = _iaqSensor.iaqEstimate;
-            _iaq_accuracy = _iaqSensor.iaqAccuracy;
             _gas_resistance = _iaqSensor.gasResistance;
 
-            _static_iaq_accuracy = _iaqSensor.staticIaqAccuracy;
+            _accuracy = _iaqSensor.iaqAccuracy;
+            _iaq = _iaqSensor.iaqEstimate;
             _static_iaq = _iaqSensor.staticIaq;
-            _co2_accuracy = _iaqSensor.co2Accuracy;
-            _co2_equivalent = _iaqSensor.co2Equivalent;
-            _breath_voc_accuracy = _iaqSensor.breathVocAccuracy;
-            _breath_voc_equivalent = _iaqSensor.breathVocEquivalent;
-            _comp_gas_accuracy = _iaqSensor.compGasAccuracy;
-            _comp_gas_value = _iaqSensor.compGasValue;
-            _gas_percentage_acccuracy = _iaqSensor.gasPercentageAcccuracy;
-            _gas_percentage = _iaqSensor.gasPercentage;
 
             // Some calculation with fixed values for good and bad air quality sensor resistance.
             // Bad sensor resistance should be the value for AQ=250, good for AQ=25. Calculations
@@ -128,52 +138,16 @@ void AQSensors::loop() {
     }
 }
 
-uint8_t AQSensors::getIAQAccuracy() {
-    return _iaq_accuracy;
+uint8_t AQSensors::getAccuracy() {
+    return _accuracy;
 }
 
 float AQSensors::getIAQ() {
     return _iaq;
 }
 
-uint8_t AQSensors::getStaticIaqAccuracy() {
-    return _static_iaq_accuracy;
-}
-
 float AQSensors::getStaticIaq() {
     return _static_iaq;
-}
-
-uint8_t AQSensors::getCo2Accuracy() {
-    return _co2_accuracy;
-}
-
-float AQSensors::getCo2Equivalent() {
-    return _co2_equivalent;
-}
-
-uint8_t AQSensors::getBreathVocAccuracy() {
-    return _breath_voc_accuracy;
-}
-
-float AQSensors::getBreathVocEquivalent() {
-    return _breath_voc_equivalent;
-}
-
-uint8_t AQSensors::getCompGasAccuracy() {
-    return _comp_gas_accuracy;
-}
-
-float AQSensors::getCompGasValue() {
-    return _comp_gas_value;
-}
-
-uint8_t AQSensors::getGasPercentageAcccuracy() {
-    return _gas_percentage_acccuracy;
-}
-
-float AQSensors::getGasPercentage() {
-    return _gas_percentage;
 }
 
 float AQSensors::getHumidity() {
