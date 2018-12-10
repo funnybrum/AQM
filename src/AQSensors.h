@@ -17,7 +17,7 @@ class AQSensors {
         float getGasResistance();
         uint8_t getAccuracy();
         float getIAQ();
-        float getStaticIaq();
+        float getStaticIAQ();
         float getCalculatedIAQ();
     private:
         float _temp = 0.0f;

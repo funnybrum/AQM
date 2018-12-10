@@ -15,6 +15,7 @@
 #include "WebServer.h"
 #include "WiFi.h"
 #include "Logger.h"
+#include "TelemetryCollector.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor"

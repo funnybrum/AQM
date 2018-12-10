@@ -34,6 +34,7 @@ void Logger::log(const char *format, ...) {
     va_start(arg, format);
     char buffer[128];
     unsigned int len = vsnprintf(buffer, sizeof(buffer), format, arg);
+    Serial.println(buffer);
     va_end(arg);
     if (len > sizeof(buffer)) {
         log("Trimming log!");

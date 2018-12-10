@@ -14,6 +14,7 @@ void setup()
     aqSensors.begin();
     webServer.begin();
     systemCheck.begin();
+    telemetryCollector.begin();
 }
 
 void loop() {
@@ -22,5 +23,6 @@ void loop() {
     settings.loop();
     led.loop();
     systemCheck.loop();
+    telemetryCollector.loop();
     delay(100);
 }

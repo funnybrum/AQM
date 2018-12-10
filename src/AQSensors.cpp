@@ -125,7 +125,7 @@ float AQSensors::getIAQ() {
     return _iaq;
 }
 
-float AQSensors::getStaticIaq() {
+float AQSensors::getStaticIAQ() {
     return _static_iaq;
 }
 

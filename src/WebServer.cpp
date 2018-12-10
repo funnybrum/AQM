@@ -45,7 +45,7 @@ void WebServer::handle_get() {
               aqSensors.getGasResistance(),
               aqSensors.getAccuracy(),
               aqSensors.getIAQ(),
-              aqSensors.getStaticIaq(),
+              aqSensors.getStaticIAQ(),
               aqSensors.getCalculatedIAQ());
     _server->send(200, "application/json", resp);
 }
