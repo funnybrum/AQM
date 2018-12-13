@@ -8,16 +8,18 @@ void setup()
     }
     settings.begin();
 
-    ScanAndConnect();
-
+    wifi.begin();
     led.begin();
     aqSensors.begin();
     webServer.begin();
     systemCheck.begin();
     telemetryCollector.begin();
+
+    wifi.connect();
 }
 
 void loop() {
+    wifi.loop();
     webServer.loop();
     aqSensors.loop();
     settings.loop();

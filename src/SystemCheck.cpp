@@ -10,15 +10,15 @@ void SystemCheck::loop() {
         lastWiFiConnectedState = millis();
     }
 
-    if (hasTimeoutOccur(lastWebCall, 600)) {
-        logger.log("Reseting based on the lastWebCall timestamp!");
-        ESP.reset();
-    }
+    // if (hasTimeoutOccur(lastWebCall, 600)) {
+    //     logger.log("Reseting based on the lastWebCall timestamp!");
+    //     ESP.reset();
+    // }
 
-    if (hasTimeoutOccur(lastWiFiConnectedState, 120)) {
-        logger.log("Reseting based on the lastWiFiConnectedState timestamp!");
-        ESP.reset();
-    }
+    // if (hasTimeoutOccur(lastWiFiConnectedState, 120)) {
+    //     logger.log("Reseting based on the lastWiFiConnectedState timestamp!");
+    //     ESP.reset();
+    // }
 }
 
 void SystemCheck::registerWebCall() {

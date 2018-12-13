@@ -4,6 +4,8 @@
 #include "AQMonitor.h"
 #include <ESP8266HTTPClient.h>
 
+#define TELEMETRY_BUFFER_SIZE 10000
+
 class TelemetryCollector {
     public:
         void begin();
@@ -12,10 +14,12 @@ class TelemetryCollector {
     private:
         void syncTime(const char* dateTime);
         void collect();
-        void append(const char* metric, float value);
+        void append(const char* metric, float value, uint8_t precision);
+        void ping();
         bool push();
 
-        String data = "";
+        char telemetryData[TELEMETRY_BUFFER_SIZE];
+        unsigned int telemetryDataSize = 0;
 
         unsigned long lastDataCollect;
         unsigned long lastDataPush;

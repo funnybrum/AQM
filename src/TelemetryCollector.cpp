@@ -1,67 +1,78 @@
 #include "AQMonitor.h"
 
 #define PUSH_INTERVAL 120
-#define COLLECT_INTERVAL 2
+#define COLLECT_INTERVAL 5
 #define DATABASE "test"
 
 void TelemetryCollector::begin() {
     lastDataCollect = millis() - COLLECT_INTERVAL * 1000;
     lastDataPush = millis();
+    remoteTimestamp = 0;
 
     http = new HTTPClient();
     const char * headerKeys[] = {"date"};
     http->collectHeaders(headerKeys, 1);
-
-    int httpCode = -1;
-    int retryCount = 0;
-    while (httpCode != 204 && retryCount < 3) {
-        http->begin("http://192.168.0.200:8086/ping");
-        httpCode = http->GET();
-        if (httpCode != 204) {
-            http->end();
-        }
-        retryCount += 1;
-        delay(100);
-    }
-
-    if (httpCode == 204) {
-        syncTime(http->header("date").c_str());
-        http->end();
-    } else {
-        logger.log("Failed to get timestmap from the InfluxDB server!");
-    }
-
 }
 
 void TelemetryCollector::loop() {
-    if (millis() - lastDataCollect > COLLECT_INTERVAL * 1000) {
-        collect();
-        lastDataCollect += COLLECT_INTERVAL * 1000;
-        delay(2000);
-    }
-
-    if (millis() - lastDataPush > PUSH_INTERVAL * 1000) {
-        if (push()) {
-            lastDataPush += PUSH_INTERVAL * 1000;
+    if (remoteTimestamp == 0) {
+        if (!wifi.isConnected()) {
+            wifi.connect();
+        } else {
+            ping();
+            if (remoteTimestamp != 0) {
+                wifi.disconnect();
+            }    
         }
     }
 
-    // if (millis() - remoteTimestampMillis > 5000) {
-    //     http->begin("http://192.168.0.200:8086/ping");
-    //     int httpCode = http->GET();
-    //     if (httpCode < 300) {
-    //         syncTime(http->header("date").c_str());
-    //     } else {
-    //         Serial.printf("status code: %d\n", httpCode);
-    //     }
-    //     http->end();
-    //     Serial.printf("%ld: timestamp=%ld\n", count, getTimestamp());
-    //     count++;
-    // }
+
+    if (millis() - lastDataPush > PUSH_INTERVAL * 1000 ||
+        telemetryDataSize >= 0.80f * TELEMETRY_BUFFER_SIZE) {
+        // Time for push. Either the time for that has come or the buffer is getting full.
+        Serial.printf("Telemetry data size is %d\n", telemetryDataSize);
+        // Serial.println(millis() - lastDataPush > PUSH_INTERVAL * 1000);
+        // Serial.println(telemetryDataSize >= 0.80f * TELEMETRY_BUFFER_SIZE);
+        // Serial.println(millis());
+        // Serial.println(lastDataPush);
+        if (!wifi.isConnected()) {
+            wifi.connect();
+        } else {
+            if (push()) {
+                lastDataPush = millis();
+                wifi.disconnect();
+            } else {
+                Serial.println("Failed to push...");
+            }
+        }
+    }
+
+    if (millis() - lastDataCollect > COLLECT_INTERVAL * 1000) {
+        collect();
+        lastDataCollect += COLLECT_INTERVAL * 1000;
+    }
 }
 
+// Executed with only purpose to get the current timestamp of the IndluxDB.
+void TelemetryCollector::ping() {
+    Serial.println("Pinging...");
+    http->begin("http://192.168.0.200:8086/ping");
+    int httpCode = http->GET();
+    if (httpCode == 204) {
+        syncTime(http->header("date").c_str());
+    }
+    http->end();
+}
+
+// Sync the local timestamp based on the date/time response from the InfluxDB server. This is
+// needed in order to append the proper timestamps to the metrics beeing generated.
 void TelemetryCollector::syncTime(const char* dateTime) {
     Serial.println(dateTime);
+    if (strlen(dateTime) != 29) {
+        // Something's wrong. The datetime should be 29 characters.
+        logger.log("Failed to parse the InfluxDB date/time: %s", dateTime);
+        return;
+    }
     // Get the millis when the remote date was received.
     remoteTimestampMillis = millis();
 
@@ -127,35 +138,64 @@ unsigned long TelemetryCollector::getTimestamp() {
     return remoteTimestamp + secondsSinceTimestampRetrieval;
 }
 
-void TelemetryCollector::append(const char* metric, float value) {
-    data +=
-        String(metric) +
-        ",hostname=" +
-        settings.get()->hostname +
-        " value=" +
-        value +
-        " " +
-        getTimestamp() +
-        "000000000\n";
+void TelemetryCollector::append(const char* metric, float value, uint8_t precision=0) {
+    char format[32];
+    int metricSize = 0;
+    if (remoteTimestamp > 0) {
+        sprintf(format, "%%s,src=%%s value=%%.%df %%ld\n", precision);
+        metricSize = snprintf(
+            telemetryData + telemetryDataSize,
+            TELEMETRY_BUFFER_SIZE - telemetryDataSize,
+            format,
+            metric,
+            settings.get()->hostname,
+            value,
+            getTimestamp());
+    } else {
+        // Same as above, but without a timestamp. In this case the timestamp for the metric will
+        // be the current time when they are send to the InfluxDB.
+        sprintf(format, "%%s,src=%%s value=%%.%df\n", precision);
+        metricSize = snprintf(
+            telemetryData + telemetryDataSize,
+            TELEMETRY_BUFFER_SIZE - telemetryDataSize,
+            format,
+            metric,
+            settings.get()->hostname,
+            value);
+    }
+
+    if (telemetryDataSize + metricSize > TELEMETRY_BUFFER_SIZE) {
+        // In that case - we don't have the whole metric line in the buffer.
+        telemetryData[telemetryDataSize] = '\0';
+        Serial.println("Telemetry buffer overflow!");
+    } else {
+        telemetryDataSize += metricSize;
+    }
 }
 
 void TelemetryCollector::collect() {
     append("iaq", aqSensors.getIAQ());
     append("iaq_static", aqSensors.getStaticIAQ());
     append("iaq_calculated", aqSensors.getCalculatedIAQ());
-    append("temperature", aqSensors.getTemp());
-    append("humidity", aqSensors.getHumidity());
+    append("temperature", aqSensors.getTemp(), 2);
+    append("humidity", aqSensors.getHumidity(), 2);
     append("resistance", aqSensors.getGasResistance());
     append("pressure", aqSensors.getPressure());
     append("accuracy", aqSensors.getAccuracy());
-    Serial.printf("Free memory: %ld\n", ESP.getFreeHeap());
+    // Serial.println("===========");
+    // Serial.print(telemetryData);
+    // Serial.println("===========");
+    // Serial. printf("Buffer usage is at %d bytes", telemetryDataSize);
 }
 
 bool TelemetryCollector::push() {
-    http->begin(String("http://192.168.0.200:8086/write?db=") + DATABASE);
-    int statusCode = http->POST((uint8_t *)data.c_str(), data.length()-1);  // Size is -1 to remove the last '\n'.
+    Serial.println("Pushing...");
+    http->begin(String("http://192.168.0.200:8086/write?precision=s&db=") + DATABASE);
+    int statusCode = http->POST((uint8_t *)telemetryData, telemetryDataSize-1);  // -1 to remove
+                                                                                 // the last '\n'.
     if (statusCode == 204) {
-        data.remove(0);
+        Serial.println("Data is pushed.");
+        telemetryDataSize = 0;
         syncTime(http->header("date").c_str());
         return true;
     } else {
