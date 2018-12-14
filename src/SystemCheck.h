@@ -8,10 +8,14 @@ class SystemCheck {
         void begin();
         void loop();
         void registerWebCall();
+        void start();
+        void stop();
     private:
         unsigned long lastWebCall;
         unsigned long lastWiFiConnectedState;
         bool hasTimeoutOccur(unsigned long timer, unsigned  int timeoutSeconds);
+        
+        bool enabled = true;
 };
 
 extern SystemCheck systemCheck;

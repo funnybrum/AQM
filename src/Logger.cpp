@@ -1,7 +1,7 @@
 #include "AQMonitor.h"
 
 void Logger::begin() {
-    buffer[0] = 0;
+    buffer[0] = '\0';
 }
 
 void Logger::loop() {
@@ -33,12 +33,10 @@ void Logger::log(const char *format, ...) {
     va_list arg;
     va_start(arg, format);
     char buffer[128];
-    unsigned int len = vsnprintf(buffer, sizeof(buffer), format, arg);
-    Serial.println(buffer);
+    vsnprintf(buffer, sizeof(buffer), format, arg);
     va_end(arg);
-    if (len > sizeof(buffer)) {
-        log("Trimming log!");
-    }
+
+    Serial.println(buffer);
     log(buffer);
 }
 

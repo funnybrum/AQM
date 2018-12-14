@@ -1,20 +1,16 @@
 #include "AQMonitor.h"
 
-#define PUSH_INTERVAL 120
-#define COLLECT_INTERVAL 5
-#define DATABASE "test"
-
 void TelemetryCollector::begin() {
-    lastDataCollect = millis() - COLLECT_INTERVAL * 1000;
-    lastDataPush = millis();
-    remoteTimestamp = 0;
-
     http = new HTTPClient();
     const char * headerKeys[] = {"date"};
     http->collectHeaders(headerKeys, 1);
 }
 
 void TelemetryCollector::loop() {
+    if (!enabled) {
+        return;
+    }
+
     if (remoteTimestamp == 0) {
         if (!wifi.isConnected()) {
             wifi.connect();
@@ -27,36 +23,31 @@ void TelemetryCollector::loop() {
     }
 
 
-    if (millis() - lastDataPush > PUSH_INTERVAL * 1000 ||
+    if (millis() - lastDataPush > settings.get()->influxDB.pushInterval * 1000 ||
         telemetryDataSize >= 0.80f * TELEMETRY_BUFFER_SIZE) {
         // Time for push. Either the time for that has come or the buffer is getting full.
-        Serial.printf("Telemetry data size is %d\n", telemetryDataSize);
-        // Serial.println(millis() - lastDataPush > PUSH_INTERVAL * 1000);
-        // Serial.println(telemetryDataSize >= 0.80f * TELEMETRY_BUFFER_SIZE);
-        // Serial.println(millis());
-        // Serial.println(lastDataPush);
         if (!wifi.isConnected()) {
             wifi.connect();
         } else {
             if (push()) {
                 lastDataPush = millis();
                 wifi.disconnect();
-            } else {
-                Serial.println("Failed to push...");
             }
         }
     }
 
-    if (millis() - lastDataCollect > COLLECT_INTERVAL * 1000) {
+    if (millis() - lastDataCollect > settings.get()->influxDB.collectInterval * 1000) {
         collect();
-        lastDataCollect += COLLECT_INTERVAL * 1000;
+        lastDataCollect += settings.get()->influxDB.collectInterval * 1000;
     }
 }
 
 // Executed with only purpose to get the current timestamp of the IndluxDB.
 void TelemetryCollector::ping() {
-    Serial.println("Pinging...");
-    http->begin("http://192.168.0.200:8086/ping");
+    String url = "";
+    url += settings.get()->influxDB.address;
+    url += "/ping";
+    http->begin(url);
     int httpCode = http->GET();
     if (httpCode == 204) {
         syncTime(http->header("date").c_str());
@@ -67,7 +58,6 @@ void TelemetryCollector::ping() {
 // Sync the local timestamp based on the date/time response from the InfluxDB server. This is
 // needed in order to append the proper timestamps to the metrics beeing generated.
 void TelemetryCollector::syncTime(const char* dateTime) {
-    Serial.println(dateTime);
     if (strlen(dateTime) != 29) {
         // Something's wrong. The datetime should be 29 characters.
         logger.log("Failed to parse the InfluxDB date/time: %s", dateTime);
@@ -148,7 +138,7 @@ void TelemetryCollector::append(const char* metric, float value, uint8_t precisi
             TELEMETRY_BUFFER_SIZE - telemetryDataSize,
             format,
             metric,
-            settings.get()->hostname,
+            settings.get()->network.hostname,
             value,
             getTimestamp());
     } else {
@@ -160,14 +150,14 @@ void TelemetryCollector::append(const char* metric, float value, uint8_t precisi
             TELEMETRY_BUFFER_SIZE - telemetryDataSize,
             format,
             metric,
-            settings.get()->hostname,
+            settings.get()->network.hostname,
             value);
     }
 
     if (telemetryDataSize + metricSize > TELEMETRY_BUFFER_SIZE) {
         // In that case - we don't have the whole metric line in the buffer.
         telemetryData[telemetryDataSize] = '\0';
-        Serial.println("Telemetry buffer overflow!");
+        logger.log("Telemetry buffer overflow!");
     } else {
         telemetryDataSize += metricSize;
     }
@@ -182,27 +172,52 @@ void TelemetryCollector::collect() {
     append("resistance", aqSensors.getGasResistance());
     append("pressure", aqSensors.getPressure());
     append("accuracy", aqSensors.getAccuracy());
-    // Serial.println("===========");
-    // Serial.print(telemetryData);
-    // Serial.println("===========");
-    // Serial. printf("Buffer usage is at %d bytes", telemetryDataSize);
 }
 
 bool TelemetryCollector::push() {
-    Serial.println("Pushing...");
-    http->begin(String("http://192.168.0.200:8086/write?precision=s&db=") + DATABASE);
+    String url = "";
+    url += settings.get()->influxDB.address;
+    url += "/write?precision=s&db=";
+    url += settings.get()->influxDB.database;
+
+    http->begin(url);
     int statusCode = http->POST((uint8_t *)telemetryData, telemetryDataSize-1);  // -1 to remove
                                                                                  // the last '\n'.
     if (statusCode == 204) {
-        Serial.println("Data is pushed.");
         telemetryDataSize = 0;
         syncTime(http->header("date").c_str());
         return true;
     } else {
-        Serial.printf("Got %d status code...", statusCode);
+        logger.log("Push failed with HTTP %d", statusCode);
     }
 
     return false;
+}
+
+void TelemetryCollector::start() {
+    if (enabled) {
+        return;
+    }
+
+    enabled = true;
+
+    lastDataCollect = millis() - settings.get()->influxDB.collectInterval * 1000;
+    lastDataPush = millis();
+    remoteTimestamp = 0;
+}
+
+void TelemetryCollector::stop() {
+    if (!enabled) {
+        return;
+    }
+
+    enabled = false;
+
+    if (telemetryDataSize > 0) {
+        // The stop can be invoked only if the settings get changed. In this case the WiFi should
+        // be up and running.
+        push();
+    }
 }
 
 TelemetryCollector telemetryCollector = TelemetryCollector();

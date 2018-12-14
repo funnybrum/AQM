@@ -5,16 +5,32 @@
 
 struct SettingsData {
     uint8_t checksum;
-    uint8_t sensorCalibration[BSEC_MAX_STATE_BLOB_SIZE];
-    // Actual correction = value / 10. I.e. value of -23 is -2.3C. Same apply for humidity.
-    int8_t temperatureOffset;
-    int8_t humidityOffset;
-    char hostname[64];
-    uint16_t blinkInterval;
-    int16_t badAQResistance;
-    int16_t goodAQResistance;
-    uint8_t calibrationPeriod;
+    struct Network {
+        char hostname[64];
+        char ssid[32];
+        char password[32];
+    } network;
+    struct AQSensor {
+        uint8_t sensorCalibration[BSEC_MAX_STATE_BLOB_SIZE];
+        // Actual correction = value / 10. I.e. value of -23 is -2.3C. Same apply for humidity.
+        int16_t temperatureOffset;
+        int16_t humidityOffset;
+        int16_t badAQResistance;
+        int16_t goodAQResistance;
+        uint16_t calibrationPeriod;
+    } aqSensor;
 
+    struct LED {
+        uint16_t blinkInterval;
+    } led;
+
+    struct InfluxDB {
+        bool enable;
+        char address[64];
+        char database[16];
+        uint16_t pushInterval;
+        uint16_t collectInterval;
+    } influxDB;
 };
 
 #define DATA_SIZE sizeof(SettingsData)

@@ -13,7 +13,7 @@ void Settings::begin() {
         logger.log("Settings loaded successfully.");
     } else {
         memset(&this->data, 0, DATA_SIZE);
-        strcpy(this->data.hostname, HOSTNAME);
+        strcpy(this->data.network.hostname, HOSTNAME);
         logger.log("Failed to load settings.");
     }
 }

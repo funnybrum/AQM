@@ -4,13 +4,15 @@
 #include "AQMonitor.h"
 #include <ESP8266HTTPClient.h>
 
-#define TELEMETRY_BUFFER_SIZE 10000
+#define TELEMETRY_BUFFER_SIZE 32768
 
 class TelemetryCollector {
     public:
         void begin();
         void loop();
         unsigned long getTimestamp();
+        void stop();
+        void start();
     private:
         void syncTime(const char* dateTime);
         void collect();
@@ -26,6 +28,8 @@ class TelemetryCollector {
 
         unsigned long remoteTimestamp;
         unsigned long remoteTimestampMillis;
+
+        bool enabled = false;
 
         HTTPClient* http = NULL;
 };

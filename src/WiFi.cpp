@@ -28,7 +28,7 @@ void WiFiManager::loop() {
                     IPAddress(192, 168, 0, 1),
                     IPAddress(192, 168, 0, 1),
                     IPAddress(255, 255, 255, 0)); 
-                WiFi.softAP(settings.get()->hostname);
+                WiFi.softAP(settings.get()->network.hostname);
                 state = CONNECTED;
             }
             break;
@@ -86,19 +86,12 @@ void WiFiManager::_connect() {
         }
     }
 
-    const char* hostname;    
-    if (strlen(settings.get()->hostname) > 1) {
-        hostname = settings.get()->hostname;    
-    } else {
-        hostname = HOSTNAME;
-    }
-
-    logger.log("Hostname is %s", hostname);
+    logger.log("Hostname is %s", settings.get()->network.hostname);
 
     if (strongestSSID.compareTo("") != 0) {
         logger.log("Connecting to %s (%ddBm)", strongestSSID.c_str(), strongestSignalStrength);
 
-        WiFi.hostname(hostname);
+        WiFi.hostname(settings.get()->network.hostname);
         WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
 
         state = CONNECTING;
@@ -111,7 +104,7 @@ void WiFiManager::_connect() {
             IPAddress(192, 168, 0, 1),
             IPAddress(192, 168, 0, 1),
             IPAddress(255, 255, 255, 0)); 
-        WiFi.softAP(hostname);
+        WiFi.softAP(settings.get()->network.hostname);
     }
 
     WiFi.scanDelete();

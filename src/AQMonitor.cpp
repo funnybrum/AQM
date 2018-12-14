@@ -7,7 +7,6 @@ void setup()
         delay(1);
     }
     settings.begin();
-
     wifi.begin();
     led.begin();
     aqSensors.begin();
@@ -26,5 +25,14 @@ void loop() {
     led.loop();
     systemCheck.loop();
     telemetryCollector.loop();
+
+    if (settings.get()->influxDB.enable) {
+        systemCheck.stop();
+        telemetryCollector.begin();
+    } else {
+        telemetryCollector.stop();
+        systemCheck.start();
+    }
+
     delay(100);
 }

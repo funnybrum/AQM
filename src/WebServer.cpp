@@ -6,8 +6,8 @@ WebServer::WebServer(int port) {
     _server->on("/", std::bind(&WebServer::handle_root, this));
     _server->on("/get", std::bind(&WebServer::handle_get, this));
     _server->on("/settings", std::bind(&WebServer::handle_settings, this));
+    _server->on("/reboot", std::bind(&WebServer::handle_reboot, this));
     _server->on("/reset", std::bind(&WebServer::handle_reset, this));
-    _server->on("/hard-reset", std::bind(&WebServer::handle_hard_reset, this));
     _server->on("/blink", std::bind(&WebServer::handle_blink, this));
     _server->on("/logs", std::bind(&WebServer::handle_logs, this));
 
@@ -55,102 +55,61 @@ void WebServer::handle_settings() {
 
     bool save = false;
 
-    if (_server->hasArg("hostname")) {
-        String new_hostname = _server->arg("hostname");
-        unsigned int max_hostname_length = sizeof(settings.get()->hostname) - 1;
+    SettingsData* s = settings.get();
 
-        if (new_hostname.length() > 2 && new_hostname.length() < max_hostname_length) {
-            bool valid = true;
-            for (unsigned int i = 0; i < new_hostname.length(); i++) {
-                char ch = new_hostname.charAt(i);
-                if (!isalnum(ch) && ch != '-') {
-                    valid = false;
-                    break;
-                }
-            }
+    process_setting("hostname", s->network.hostname, sizeof(s->network.hostname), save);
+    process_setting("ssid", s->network.ssid, sizeof(s->network.ssid), save);
+    process_setting("password", s->network.password, sizeof(s->network.password), save);
 
-            if (valid) {
-                strcpy(settings.get()->hostname, new_hostname.c_str());
-                save = true;
-            }
-        }
-    }
+    process_setting("ifx_enabled", s->influxDB.enable, save);
+    process_setting("ifx_address", s->influxDB.address, sizeof(s->influxDB.address), save);
+    process_setting("ifx_db", s->influxDB.database, sizeof(s->influxDB.database), save);
+    process_setting("ifx_collect", s->influxDB.collectInterval, save);
+    process_setting("ifx_push", s->influxDB.pushInterval, save);
 
-    if (_server->hasArg("temp_offset")) {
-        int val = _server->arg("temp_offset").toInt();
-        if (-125 <= val && val <= 125) {
-            settings.get()->temperatureOffset = val;
-            save = true;
-        }
-    }
-
-    if (_server->hasArg("humidity_offset")) {
-        int val = _server->arg("humidity_offset").toInt();
-        if (-125 <= val && val <= 125) {
-            settings.get()->humidityOffset = val;
-            save = true;
-        }
-    }
-
-    if (_server->hasArg("calibration_period")) {
-        int val = _server->arg("calibration_period").toInt();
-        if (val == 4 or val == 28) {
-            settings.get()->calibrationPeriod = val;
-            save = true;
-        }
-    }
-
-    if (_server->hasArg("blink_interval")) {
-        int val = _server->arg("blink_interval").toInt();
-        if (0 <= val && val <= 3600) {
-            settings.get()->blinkInterval = val;
-            save = true;
-        }
-    }
-
-    if (_server->hasArg("good_aq_res")) {
-        int val = _server->arg("good_aq_res").toInt();
-        if (0 <= val && val <= 2000) {
-            settings.get()->goodAQResistance = val;
-            save = true;
-        }
-    }
-
-    if (_server->hasArg("bad_aq_res")) {
-        int val = _server->arg("bad_aq_res").toInt();
-        if (0 <= val && val <= 2000) {
-            settings.get()->badAQResistance = val;
-            save = true;
-        }
-    }
+    process_setting("temp_offset", s->aqSensor.temperatureOffset, save);
+    process_setting("humidity_offset", s->aqSensor.humidityOffset, save);
+    process_setting("calibration_period", s->aqSensor.calibrationPeriod, save);
+    process_setting("good_aq_res", s->aqSensor.goodAQResistance, save);
+    process_setting("bad_aq_res", s->aqSensor.badAQResistance, save);
+    
+    process_setting("blink_interval", s->led.blinkInterval, save);
 
     if (save) {
-        settings.save();        
+        settings.save();
+        s->influxDB.enable = strncmp("http://", s->influxDB.address, 7) == 0;
     }
 
-    char resp[strlen_P(CONFIG_PAGE) + 128];
+    char resp[strlen_P(CONFIG_PAGE) + 256];
     sprintf_P(
         resp,
         CONFIG_PAGE,
-        settings.get()->hostname, 
-        settings.get()->temperatureOffset, 
-        settings.get()->humidityOffset,
-        (settings.get()->calibrationPeriod != 28)?"selected":"",
-        (settings.get()->calibrationPeriod == 28)?"selected":"",
-        settings.get()->blinkInterval,
-        settings.get()->badAQResistance,
-        settings.get()->goodAQResistance);
+        s->network.hostname,
+        s->network.ssid,
+        (s->influxDB.enable)?"selected":"",
+        (!s->influxDB.enable)?"selected":"",
+        s->influxDB.address,
+        s->influxDB.database,
+        s->influxDB.collectInterval,
+        s->influxDB.pushInterval,
+        s->aqSensor.temperatureOffset, 
+        s->aqSensor.humidityOffset,
+        (s->aqSensor.calibrationPeriod != 28)?"selected":"",
+        (s->aqSensor.calibrationPeriod == 28)?"selected":"",
+        s->aqSensor.goodAQResistance,
+        s->aqSensor.badAQResistance,
+        s->led.blinkInterval);
     _server->send(200, "text/html", resp);
 }
 
-void WebServer::handle_reset() {
+void WebServer::handle_reboot() {
     systemCheck.registerWebCall();
     _server->send(200, "text/plain", "Restarting...");
     delay(1000);
     ESP.reset();
 }
 
-void WebServer::handle_hard_reset() {
+void WebServer::handle_reset() {
     systemCheck.registerWebCall();
     settings.erase();
     _server->send(200, "text/plain", "Calibration data erased.");
@@ -171,6 +130,43 @@ void WebServer::handle_blink() {
 void WebServer::handle_logs() {
     systemCheck.registerWebCall();
     _server->send(200, "text/html", logger.getLogs());
+}
+
+void WebServer::process_setting(const char* name, char* destination, uint8_t max_size, bool& success) {
+    if (_server->hasArg(name)) {
+        String new_value = _server->arg(name);
+        if (new_value.length() > 2 && new_value.length()+1 < max_size) {
+            strcpy(destination, new_value.c_str());
+            success = true;
+        }
+    }
+}
+
+void WebServer::process_setting(const char* name, int16_t& destination, bool& success) {
+    if (_server->hasArg(name)) {
+        destination = _server->arg(name).toInt();
+        success = true;
+    }
+}
+
+void WebServer::process_setting(const char* name, uint16_t& destination, bool& success) {
+    if (_server->hasArg(name)) {
+        destination = _server->arg(name).toInt();
+        success = true;
+    }
+}
+
+void WebServer::process_setting(const char* name, bool& destination, bool& success) {
+    if (_server->hasArg(name)) {
+        String val = _server->arg(name);
+        if (val.compareTo("true") == 0) {
+            destination = true;
+            success = true;
+        } else if (val.compareTo("false") == 0) {
+            destination = false;
+            success = true;
+        }
+    }
 }
 
 WebServer webServer = WebServer(HTTP_PORT);

@@ -11,8 +11,8 @@ void LED::begin() {
 }
 
 void LED::loop() {
-    if (settings.get()->blinkInterval > 0 &&
-        millis() - _lastBlink > 1000 * settings.get()->blinkInterval) {
+    if (settings.get()->led.blinkInterval > 0 &&
+        millis() - _lastBlink > 1000 * settings.get()->led.blinkInterval) {
         blink(aqSensors.getIAQ());
     }
 
