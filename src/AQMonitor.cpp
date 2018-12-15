@@ -28,7 +28,7 @@ void loop() {
 
     if (settings.get()->influxDB.enable) {
         systemCheck.stop();
-        telemetryCollector.begin();
+        telemetryCollector.start();
     } else {
         telemetryCollector.stop();
         systemCheck.start();

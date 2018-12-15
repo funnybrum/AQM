@@ -12,13 +12,12 @@ void TelemetryCollector::loop() {
     }
 
     if (remoteTimestamp == 0) {
+        // This will be executed only once on startup. Don't shutdown the WiFi, the first push
+        // will do that.
         if (!wifi.isConnected()) {
             wifi.connect();
         } else {
             ping();
-            if (remoteTimestamp != 0) {
-                wifi.disconnect();
-            }    
         }
     }
 
@@ -172,6 +171,7 @@ void TelemetryCollector::collect() {
     append("resistance", aqSensors.getGasResistance());
     append("pressure", aqSensors.getPressure());
     append("accuracy", aqSensors.getAccuracy());
+    append("free_heap", ESP.getFreeHeap());
 }
 
 bool TelemetryCollector::push() {

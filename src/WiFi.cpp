@@ -16,7 +16,7 @@ void WiFiManager::loop() {
             // }
             break;
         case CONNECTING:
-            if (isConnected()) {
+            if (WiFi.status() == WL_CONNECTED) {
                 logger.log("Connected in %.1f seconds!", (millis() - lastStateSetAt)/1000.0f);
                 state = CONNECTED;
                 lastStateSetAt = millis();
@@ -44,7 +44,6 @@ void WiFiManager::connect() {
     if (state != DISCONNECTED) {
         return;
     }
-    Serial.println("Connecting...");
     WiFi.mode(WIFI_STA);
     _connect();
 }
@@ -53,32 +52,29 @@ void WiFiManager::disconnect() {
     if (state == DISCONNECTED) {
         return;
     }
-    Serial.println("Disconnecting...");
     WiFi.mode(WIFI_OFF);
     state = DISCONNECTED;
     lastStateSetAt = millis();
 }
 
 bool WiFiManager::isConnected() {
-    return WiFi.status() == WL_CONNECTED;
+    return WiFi.status() == WL_CONNECTED && state == CONNECTED;
 }
 
 void WiFiManager::_connect() {
     WiFi.disconnect();
 
     int networks = WiFi.scanNetworks();
-    logger.log("Found %d networks", networks);
-
     String strongestSSID = String("");
     int strongestSignalStrength = -1000;
 
     for (int i = 0; i < networks; i++) {
         int signalStrength = WiFi.RSSI(i);
         String ssid = WiFi.SSID(i);
-        logger.log("Found %s (%ddBm)", ssid.c_str(), signalStrength);
-        if (strongestSignalStrength < signalStrength) {
-            for (unsigned int j = 0; j < sizeof(WIFI_SSIDs)/sizeof(WIFI_SSIDs[0]); j++) {
-                if (ssid.equals(WIFI_SSIDs[j])) {
+        for (unsigned int j = 0; j < sizeof(WIFI_SSIDs)/sizeof(WIFI_SSIDs[0]); j++) {
+            if (ssid.equals(WIFI_SSIDs[j])) {
+                if (strongestSignalStrength < signalStrength) {
+                    logger.log("Found %s (%ddBm)", ssid.c_str(), signalStrength);
                     strongestSignalStrength = signalStrength;
                     strongestSSID = WiFi.SSID(i);
                 }
@@ -89,8 +85,7 @@ void WiFiManager::_connect() {
     logger.log("Hostname is %s", settings.get()->network.hostname);
 
     if (strongestSSID.compareTo("") != 0) {
-        logger.log("Connecting to %s (%ddBm)", strongestSSID.c_str(), strongestSignalStrength);
-
+        logger.log("Connecting to %s", strongestSSID.c_str());
         WiFi.hostname(settings.get()->network.hostname);
         WiFi.begin(strongestSSID.c_str(), WIFI_PASSWORD.c_str());
 
@@ -108,6 +103,8 @@ void WiFiManager::_connect() {
     }
 
     WiFi.scanDelete();
+
+    Serial.printf("Free heap is %d\n", ESP.getFreeHeap());
 }
 
 WiFiManager wifi = WiFiManager();

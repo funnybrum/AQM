@@ -4,7 +4,7 @@
 #include "AQMonitor.h"
 #include <ESP8266HTTPClient.h>
 
-#define TELEMETRY_BUFFER_SIZE 32768
+#define TELEMETRY_BUFFER_SIZE 24 * 1024
 
 class TelemetryCollector {
     public:

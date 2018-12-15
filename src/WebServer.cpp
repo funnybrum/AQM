@@ -1,5 +1,7 @@
 #include "AQMonitor.h"
 
+char buffer[4096];
+
 WebServer::WebServer(int port) {
 
     _server = new ESP8266WebServer(port);
@@ -36,8 +38,7 @@ void WebServer::handle_root() {
 void WebServer::handle_get() {
     systemCheck.registerWebCall();
 
-    char resp[strlen_P(GET_JSON) + 32];
-    sprintf_P(resp,
+    sprintf_P(buffer,
               GET_JSON,
               aqSensors.getTemp(),
               aqSensors.getHumidity(),
@@ -47,7 +48,7 @@ void WebServer::handle_get() {
               aqSensors.getIAQ(),
               aqSensors.getStaticIAQ(),
               aqSensors.getCalculatedIAQ());
-    _server->send(200, "application/json", resp);
+    _server->send(200, "application/json", buffer);
 }
 
 void WebServer::handle_settings() {
@@ -77,12 +78,10 @@ void WebServer::handle_settings() {
 
     if (save) {
         settings.save();
-        s->influxDB.enable = strncmp("http://", s->influxDB.address, 7) == 0;
     }
 
-    char resp[strlen_P(CONFIG_PAGE) + 256];
     sprintf_P(
-        resp,
+        buffer,
         CONFIG_PAGE,
         s->network.hostname,
         s->network.ssid,
@@ -99,7 +98,7 @@ void WebServer::handle_settings() {
         s->aqSensor.goodAQResistance,
         s->aqSensor.badAQResistance,
         s->led.blinkInterval);
-    _server->send(200, "text/html", resp);
+    _server->send(200, "text/html", buffer);
 }
 
 void WebServer::handle_reboot() {
