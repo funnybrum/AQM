@@ -32,7 +32,7 @@ const char CONFIG_PAGE[] PROGMEM = R"=====(
         <br>
         Address:<br>
         <input type="text" name="ifx_address" value="%s"><br>
-        <small><em>like 'http://192.168.0.1/8086'</em></small><br>
+        <small><em>like 'http://192.168.0.1:8086'</em></small><br>
         <br>
         Database:<br>
         <input type="text" name="ifx_db" value="%s"><br>
@@ -83,7 +83,7 @@ const char CONFIG_PAGE[] PROGMEM = R"=====(
       <br><br>
       <input type="submit" value="Save" style='width: 150px;'>
       &nbsp;&nbsp;&nbsp;
-      <a href="/reset">
+      <a href="/reboot">
         <button type="button" style='width: 150px;'>Restart</button>
       </a>
     </form>

@@ -4,9 +4,24 @@ void initSettings() {
     strcpy(settingsData.network.hostname, HOSTNAME);
 }
 
+void collectData(TelemetryCollector* collector) {
+    collector->append("iaq", aqSensors.getIAQ());
+    collector->append("iaq_static", aqSensors.getStaticIAQ());
+    collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
+    collector->append("temperature", aqSensors.getTemp(), 2);
+    collector->append("humidity", aqSensors.getHumidity(), 2);
+    collector->append("resistance", aqSensors.getGasResistance());
+    collector->append("pressure", aqSensors.getPressure());
+    collector->append("accuracy", aqSensors.getAccuracy());
+    collector->append("free_heap", ESP.getFreeHeap());
+}
+
 SettingsData settingsData = SettingsData();
 Logger logger = Logger();
-Settings settings = Settings(logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
+Settings settings = Settings(&logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
+WiFiManager wifi = WiFiManager(&logger, &settingsData.network);
+TelemetryCollector telemetryCollector = TelemetryCollector(
+    &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData);
 
 void setup()
 { 

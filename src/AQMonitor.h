@@ -30,12 +30,7 @@
 #define BME680_SAVE_STATE_PERIOD MIN_TO_MILLIS(4L*60L)  // Save the BSEC state each 4 hours.
 
 struct SettingsData {
-    uint8_t checksum;
-    struct Network {
-        char hostname[64];
-        char ssid[32];
-        char password[32];
-    } network;
+    NetworkSettings network;
     struct AQSensor {
         uint8_t sensorCalibration[BSEC_MAX_STATE_BLOB_SIZE];
         // Actual correction = value / 10. I.e. value of -23 is -2.3C. Same apply for humidity.
@@ -50,17 +45,12 @@ struct SettingsData {
         uint16_t blinkInterval;
     } led;
 
-    struct InfluxDB {
-        bool enable;
-        char address[64];
-        char database[16];
-        uint16_t pushInterval;
-        uint16_t collectInterval;
-    } influxDB;
+    struct TelemetryCollectorSettings influxDB;
 };
 
 extern Logger logger;
 extern Settings settings;
 extern SettingsData settingsData;
+extern WiFiManager wifi;
 
 #endif
