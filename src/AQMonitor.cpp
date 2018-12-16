@@ -4,7 +4,7 @@ void initSettings() {
     strcpy(settingsData.network.hostname, HOSTNAME);
 }
 
-void collectData(TelemetryCollector* collector) {
+void collectData(InfluxDBCollector* collector) {
     collector->append("iaq", aqSensors.getIAQ());
     collector->append("iaq_static", aqSensors.getStaticIAQ());
     collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
@@ -20,7 +20,7 @@ SettingsData settingsData = SettingsData();
 Logger logger = Logger();
 Settings settings = Settings(&logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
 WiFiManager wifi = WiFiManager(&logger, &settingsData.network);
-TelemetryCollector telemetryCollector = TelemetryCollector(
+InfluxDBCollector telemetryCollector = InfluxDBCollector(
     &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData);
 
 void setup()

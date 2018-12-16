@@ -15,7 +15,7 @@
 #include "WebServer.h"
 #include "WiFi.h"
 #include "Logger.h"
-#include "TelemetryCollector.h"
+#include "InfluxDBCollector.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor"
@@ -45,7 +45,7 @@ struct SettingsData {
         uint16_t blinkInterval;
     } led;
 
-    struct TelemetryCollectorSettings influxDB;
+    struct InfluxDBCollectorSettings influxDB;
 };
 
 extern Logger logger;

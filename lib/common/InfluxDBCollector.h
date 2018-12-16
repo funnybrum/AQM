@@ -10,7 +10,7 @@
 #define TELEMETRY_BUFFER_SIZE 24 * 1024
 #endif
 
-struct TelemetryCollectorSettings {
+struct InfluxDBCollectorSettings {
     bool enable;
     char address[64];
     char database[16];
@@ -18,13 +18,13 @@ struct TelemetryCollectorSettings {
     uint16_t collectInterval;
 };
 
-class TelemetryCollector {
+class InfluxDBCollector {
     public:
-        TelemetryCollector(Logger* logger,
-                           WiFiManager* wifi,
-                           TelemetryCollectorSettings* settings,
-                           NetworkSettings* networkSettings,
-                           void (*collectFunction)(TelemetryCollector*)) {
+        InfluxDBCollector(Logger* logger,
+                          WiFiManager* wifi,
+                          InfluxDBCollectorSettings* settings,
+                          NetworkSettings* networkSettings,
+                          void (*collectFunction)(InfluxDBCollector*)) {
             this->logger = logger;
             this->wifi = wifi;
             this->settings = settings;
@@ -247,10 +247,10 @@ class TelemetryCollector {
         unsigned long remoteTimestampMillis;
         bool enabled = false;
         HTTPClient* http = NULL;
-        void (*collectFunction)(TelemetryCollector*);
+        void (*collectFunction)(InfluxDBCollector*);
         Logger* logger;
         WiFiManager* wifi = NULL;
-        TelemetryCollectorSettings* settings;
+        InfluxDBCollectorSettings* settings;
         NetworkSettings* networkSettings;
 };
 
