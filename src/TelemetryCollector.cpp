@@ -22,7 +22,7 @@ void TelemetryCollector::loop() {
     }
 
 
-    if (millis() - lastDataPush > settings.get()->influxDB.pushInterval * 1000 ||
+    if (millis() - lastDataPush > settingsData.influxDB.pushInterval * 1000 ||
         telemetryDataSize >= 0.80f * TELEMETRY_BUFFER_SIZE) {
         // Time for push. Either the time for that has come or the buffer is getting full.
         if (!wifi.isConnected()) {
@@ -35,16 +35,16 @@ void TelemetryCollector::loop() {
         }
     }
 
-    if (millis() - lastDataCollect > settings.get()->influxDB.collectInterval * 1000) {
+    if (millis() - lastDataCollect > settingsData.influxDB.collectInterval * 1000) {
         collect();
-        lastDataCollect += settings.get()->influxDB.collectInterval * 1000;
+        lastDataCollect += settingsData.influxDB.collectInterval * 1000;
     }
 }
 
 // Executed with only purpose to get the current timestamp of the IndluxDB.
 void TelemetryCollector::ping() {
     String url = "";
-    url += settings.get()->influxDB.address;
+    url += settingsData.influxDB.address;
     url += "/ping";
     http->begin(url);
     int httpCode = http->GET();
@@ -137,7 +137,7 @@ void TelemetryCollector::append(const char* metric, float value, uint8_t precisi
             TELEMETRY_BUFFER_SIZE - telemetryDataSize,
             format,
             metric,
-            settings.get()->network.hostname,
+            settingsData.network.hostname,
             value,
             getTimestamp());
     } else {
@@ -149,7 +149,7 @@ void TelemetryCollector::append(const char* metric, float value, uint8_t precisi
             TELEMETRY_BUFFER_SIZE - telemetryDataSize,
             format,
             metric,
-            settings.get()->network.hostname,
+            settingsData.network.hostname,
             value);
     }
 
@@ -176,9 +176,9 @@ void TelemetryCollector::collect() {
 
 bool TelemetryCollector::push() {
     String url = "";
-    url += settings.get()->influxDB.address;
+    url += settingsData.influxDB.address;
     url += "/write?precision=s&db=";
-    url += settings.get()->influxDB.database;
+    url += settingsData.influxDB.database;
 
     http->begin(url);
     int statusCode = http->POST((uint8_t *)telemetryData, telemetryDataSize-1);  // -1 to remove
@@ -201,7 +201,7 @@ void TelemetryCollector::start() {
 
     enabled = true;
 
-    lastDataCollect = millis() - settings.get()->influxDB.collectInterval * 1000;
+    lastDataCollect = millis() - settingsData.influxDB.collectInterval * 1000;
     lastDataPush = millis();
     remoteTimestamp = 0;
 }

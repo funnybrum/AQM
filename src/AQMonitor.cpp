@@ -1,5 +1,13 @@
 #include "AQMonitor.h"
 
+void initSettings() {
+    strcpy(settingsData.network.hostname, HOSTNAME);
+}
+
+SettingsData settingsData = SettingsData();
+Logger logger = Logger();
+Settings settings = Settings(logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
+
 void setup()
 { 
     Serial.begin(115200);
@@ -26,7 +34,7 @@ void loop() {
     systemCheck.loop();
     telemetryCollector.loop();
 
-    if (settings.get()->influxDB.enable) {
+    if (settingsData.influxDB.enable) {
         systemCheck.stop();
         telemetryCollector.start();
     } else {

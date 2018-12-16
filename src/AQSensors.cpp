@@ -55,7 +55,7 @@ void AQSensors::begin() {
         255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
         255,255,255,255,255,255,255,255,255,255,48,117,0,0,0,0,160,82,0,0};
 
-    if (settings.get()->aqSensor.calibrationPeriod != 28) {
+    if (settingsData.aqSensor.calibrationPeriod != 28) {
         _iaqSensor.setConfig(generic_33v_300s_4d);
     } else {
         _iaqSensor.setConfig(generic_33v_300s_28d);
@@ -82,7 +82,7 @@ void AQSensors::begin() {
 void AQSensors::loop() {
     // Sensor shows the temperature of the chip itself and this is usually above ambient. An offset
     // can be configured to compensate for this. The offset depends on the PCB layout.
-    _iaqSensor.setTemperatureOffset(settings.get()->aqSensor.temperatureOffset * -0.1f);
+    _iaqSensor.setTemperatureOffset(settingsData.aqSensor.temperatureOffset * -0.1f);
 
     bool newDataAvailable = _iaqSensor.run();
     if (millis() - _lastRefresh > 1000 * 10) {
@@ -93,7 +93,7 @@ void AQSensors::loop() {
             _lastRefresh = millis();
 
             _temp = _iaqSensor.temperature;
-            _humidity = _iaqSensor.humidity + (settings.get()->aqSensor.humidityOffset * 0.1f);
+            _humidity = _iaqSensor.humidity + (settingsData.aqSensor.humidityOffset * 0.1f);
             _pressure = _iaqSensor.pressure;
             _gas_resistance = _iaqSensor.gasResistance;
 
@@ -106,16 +106,16 @@ void AQSensors::loop() {
             // are using linear interpolation to get the AQ value.
             float dRper1AQ =
                 1000 * (
-                    settings.get()->aqSensor.goodAQResistance -
-                    settings.get()->aqSensor.badAQResistance
+                    settingsData.aqSensor.goodAQResistance -
+                    settingsData.aqSensor.badAQResistance
                 ) / 225.0f;
-            if (_gas_resistance - 1000 * settings.get()->aqSensor.badAQResistance == 0) {
+            if (_gas_resistance - 1000 * settingsData.aqSensor.badAQResistance == 0) {
                 _calculated_iaq = 250.0f;
             } else {
                 _calculated_iaq =
                     250.0f - (
                         _gas_resistance - 1000 *
-                        settings.get()->aqSensor.badAQResistance
+                        settingsData.aqSensor.badAQResistance
                     ) / dRper1AQ;
             }
             _calculated_iaq = min(_calculated_iaq, 500.0f);
@@ -185,12 +185,12 @@ void AQSensors::checkIaqSensorStatus(void)
 
 void AQSensors::loadState(void)
 {
-    uint8_t *state = settings.get()->aqSensor.sensorCalibration;
+    uint8_t *state = settingsData.aqSensor.sensorCalibration;
     for (int i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++) {
         // Check if we have non-zero calibration byte. If we do - the calibraiton
         // data is valid and can be used.
         if (state[i] != 0) {
-            _iaqSensor.setState(settings.get()->aqSensor.sensorCalibration);
+            _iaqSensor.setState(settingsData.aqSensor.sensorCalibration);
             checkIaqSensorStatus();
             logger.log("Settings applied.");
             break;
@@ -214,7 +214,7 @@ void AQSensors::updateState(void)
 
     if (update) {
         _lastStateUpdate = millis();
-        _iaqSensor.getState(settings.get()->aqSensor.sensorCalibration);
+        _iaqSensor.getState(settingsData.aqSensor.sensorCalibration);
         checkIaqSensorStatus();
         settings.save();
     }

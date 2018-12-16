@@ -56,25 +56,23 @@ void WebServer::handle_settings() {
 
     bool save = false;
 
-    SettingsData* s = settings.get();
+    process_setting("hostname", settingsData.network.hostname, sizeof(settingsData.network.hostname), save);
+    process_setting("ssid", settingsData.network.ssid, sizeof(settingsData.network.ssid), save);
+    process_setting("password", settingsData.network.password, sizeof(settingsData.network.password), save);
 
-    process_setting("hostname", s->network.hostname, sizeof(s->network.hostname), save);
-    process_setting("ssid", s->network.ssid, sizeof(s->network.ssid), save);
-    process_setting("password", s->network.password, sizeof(s->network.password), save);
+    process_setting("ifx_enabled", settingsData.influxDB.enable, save);
+    process_setting("ifx_address", settingsData.influxDB.address, sizeof(settingsData.influxDB.address), save);
+    process_setting("ifx_db", settingsData.influxDB.database, sizeof(settingsData.influxDB.database), save);
+    process_setting("ifx_collect", settingsData.influxDB.collectInterval, save);
+    process_setting("ifx_push", settingsData.influxDB.pushInterval, save);
 
-    process_setting("ifx_enabled", s->influxDB.enable, save);
-    process_setting("ifx_address", s->influxDB.address, sizeof(s->influxDB.address), save);
-    process_setting("ifx_db", s->influxDB.database, sizeof(s->influxDB.database), save);
-    process_setting("ifx_collect", s->influxDB.collectInterval, save);
-    process_setting("ifx_push", s->influxDB.pushInterval, save);
-
-    process_setting("temp_offset", s->aqSensor.temperatureOffset, save);
-    process_setting("humidity_offset", s->aqSensor.humidityOffset, save);
-    process_setting("calibration_period", s->aqSensor.calibrationPeriod, save);
-    process_setting("good_aq_res", s->aqSensor.goodAQResistance, save);
-    process_setting("bad_aq_res", s->aqSensor.badAQResistance, save);
+    process_setting("temp_offset", settingsData.aqSensor.temperatureOffset, save);
+    process_setting("humidity_offset", settingsData.aqSensor.humidityOffset, save);
+    process_setting("calibration_period", settingsData.aqSensor.calibrationPeriod, save);
+    process_setting("good_aq_res", settingsData.aqSensor.goodAQResistance, save);
+    process_setting("bad_aq_res", settingsData.aqSensor.badAQResistance, save);
     
-    process_setting("blink_interval", s->led.blinkInterval, save);
+    process_setting("blink_interval", settingsData.led.blinkInterval, save);
 
     if (save) {
         settings.save();
@@ -83,21 +81,21 @@ void WebServer::handle_settings() {
     sprintf_P(
         buffer,
         CONFIG_PAGE,
-        s->network.hostname,
-        s->network.ssid,
-        (s->influxDB.enable)?"selected":"",
-        (!s->influxDB.enable)?"selected":"",
-        s->influxDB.address,
-        s->influxDB.database,
-        s->influxDB.collectInterval,
-        s->influxDB.pushInterval,
-        s->aqSensor.temperatureOffset, 
-        s->aqSensor.humidityOffset,
-        (s->aqSensor.calibrationPeriod != 28)?"selected":"",
-        (s->aqSensor.calibrationPeriod == 28)?"selected":"",
-        s->aqSensor.goodAQResistance,
-        s->aqSensor.badAQResistance,
-        s->led.blinkInterval);
+        settingsData.network.hostname,
+        settingsData.network.ssid,
+        (settingsData.influxDB.enable)?"selected":"",
+        (!settingsData.influxDB.enable)?"selected":"",
+        settingsData.influxDB.address,
+        settingsData.influxDB.database,
+        settingsData.influxDB.collectInterval,
+        settingsData.influxDB.pushInterval,
+        settingsData.aqSensor.temperatureOffset, 
+        settingsData.aqSensor.humidityOffset,
+        (settingsData.aqSensor.calibrationPeriod != 28)?"selected":"",
+        (settingsData.aqSensor.calibrationPeriod == 28)?"selected":"",
+        settingsData.aqSensor.goodAQResistance,
+        settingsData.aqSensor.badAQResistance,
+        settingsData.led.blinkInterval);
     _server->send(200, "text/html", buffer);
 }
 
