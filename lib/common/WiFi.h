@@ -52,6 +52,7 @@ class WiFiManager {
                             IPAddress(255, 255, 255, 0)); 
                         WiFi.softAP(settings->hostname);
                         state = CONNECTED;
+                        lastStateSetAt = millis();
                     }
                     break;
                 case DISCONNECTED:
@@ -106,8 +107,8 @@ class WiFiManager {
                 WiFi.hostname(settings->hostname);
                 WiFi.begin(strongestSSID.c_str(), settings->password);
 
-                state = CONNECTING;
                 lastStateSetAt = millis();
+                state = CONNECTING;
             } else {
                 logger->log("%s not found, switching to AP mode", settings->ssid);
 
@@ -117,6 +118,9 @@ class WiFiManager {
                     IPAddress(192, 168, 0, 1),
                     IPAddress(255, 255, 255, 0)); 
                 WiFi.softAP(settings->hostname);
+
+                lastStateSetAt = millis();
+                state = CONNECTED;
             }
 
             WiFi.scanDelete();

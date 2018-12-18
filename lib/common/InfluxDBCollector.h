@@ -1,5 +1,4 @@
-#ifndef _TELEMETRY_COLLECTOR_H_
-#define _TELEMETRY_COLLECTOR_H_
+#pragma once
 
 #include <ESP8266HTTPClient.h>
 
@@ -234,6 +233,8 @@ class InfluxDBCollector {
                 return true;
             } else {
                 logger->log("Push failed with HTTP %d", statusCode);
+                wifi->disconnect();
+                wifi->connect();
             }
 
             return false;
@@ -253,5 +254,3 @@ class InfluxDBCollector {
         InfluxDBCollectorSettings* settings;
         NetworkSettings* networkSettings;
 };
-
-#endif

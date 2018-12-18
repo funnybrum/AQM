@@ -52,5 +52,6 @@ extern Logger logger;
 extern Settings settings;
 extern SettingsData settingsData;
 extern WiFiManager wifi;
+extern SystemCheck systemCheck;
 
 #endif

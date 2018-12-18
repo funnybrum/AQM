@@ -1,5 +1,4 @@
-#ifndef _SETTINGS_H_
-#define _SETTINGS_H_
+#pragma once
 
 #include "Logger.h"
 #include "Arduino.h"
@@ -65,7 +64,3 @@ class Settings {
         uint16_t settingsSize;
         void (*initFunction)(void);
 };
-
-extern Settings settings;
-
-#endif

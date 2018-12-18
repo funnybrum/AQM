@@ -9,7 +9,7 @@ void collectData(InfluxDBCollector* collector) {
     collector->append("iaq_static", aqSensors.getStaticIAQ());
     collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
     collector->append("temperature", aqSensors.getTemp(), 2);
-    collector->append("humidity", aqSensors.getHumidity(), 2);
+    collector->append("humidity", aqSensors.getHumidity(), 1);
     collector->append("resistance", aqSensors.getGasResistance());
     collector->append("pressure", aqSensors.getPressure());
     collector->append("accuracy", aqSensors.getAccuracy());
@@ -20,6 +20,7 @@ SettingsData settingsData = SettingsData();
 Logger logger = Logger();
 Settings settings = Settings(&logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
 WiFiManager wifi = WiFiManager(&logger, &settingsData.network);
+SystemCheck systemCheck = SystemCheck(&logger);
 InfluxDBCollector telemetryCollector = InfluxDBCollector(
     &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData);
 
