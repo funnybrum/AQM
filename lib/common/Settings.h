@@ -59,8 +59,8 @@ class Settings {
             EEPROM.end();
         }
 
-        Logger* logger;
-        void* settingsData;
-        uint16_t settingsSize;
-        void (*initFunction)(void);
+        Logger* logger = NULL;
+        void* settingsData = NULL;
+        uint16_t settingsSize = 0;
+        void (*initFunction)(void) = NULL;
 };

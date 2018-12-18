@@ -54,5 +54,6 @@ class SystemCheck {
         unsigned long lastWebCall;
         unsigned long lastWiFiConnectedState;
         bool enabled = true;
-        Logger* logger;
+
+        Logger* logger = NULL;
 };

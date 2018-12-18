@@ -128,6 +128,7 @@ class WiFiManager {
 
         WiFiState state;
         unsigned long lastStateSetAt;
-        Logger* logger;
-        NetworkSettings* settings;
+
+        Logger* logger = NULL;
+        NetworkSettings* settings = NULL;
 };

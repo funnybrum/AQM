@@ -248,9 +248,10 @@ class InfluxDBCollector {
         unsigned long remoteTimestampMillis;
         bool enabled = false;
         HTTPClient* http = NULL;
-        void (*collectFunction)(InfluxDBCollector*);
-        Logger* logger;
+
+        Logger* logger = NULL;
         WiFiManager* wifi = NULL;
-        InfluxDBCollectorSettings* settings;
-        NetworkSettings* networkSettings;
+        InfluxDBCollectorSettings* settings = NULL;
+        NetworkSettings* networkSettings = NULL;
+        void (*collectFunction)(InfluxDBCollector*) = NULL;
 };
