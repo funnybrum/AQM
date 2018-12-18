@@ -24,6 +24,8 @@ SystemCheck systemCheck = SystemCheck(&logger);
 InfluxDBCollector telemetryCollector = InfluxDBCollector(
     &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData);
 
+WebServer webServer = WebServer(&settingsData.network, &logger, &systemCheck);
+
 void setup()
 { 
     Serial.begin(115200);
