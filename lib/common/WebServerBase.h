@@ -10,22 +10,25 @@
 
 class WebServerBase {
     public:
-        WebServerBase(NetworkSettings* networkSettings, Logger* logger, SystemCheck* systemCheck=NULL, int port=80) {
+        WebServerBase(NetworkSettings* networkSettings, Logger* logger, SystemCheck* systemCheck=NULL) {
             this->logger = logger;
             this->systemCheck = systemCheck;
             this->networkSettings = networkSettings;
 
-            server = new ESP8266WebServer(port);
-            server->on("/reboot", std::bind(&WebServerBase::handle_reboot, this));
-            server->on("/logs", std::bind(&WebServerBase::handle_logs, this));
-
-            httpUpdater = new ESP8266HTTPUpdateServer(true);
-            httpUpdater->setup(server);
         };
  
         void begin() {
+            server = new ESP8266WebServer(80);
+            server->on("/reboot", std::bind(&WebServerBase::handle_reboot, this));
+            server->on("/logs", std::bind(&WebServerBase::handle_logs, this));
+            registerHandlers();
+
+            httpUpdater = new ESP8266HTTPUpdateServer(true);
+            httpUpdater->setup(server);
+
             MDNS.begin(networkSettings->hostname);
             MDNS.addService("http", "tcp", 80);
+
             server->begin();
         }
 
