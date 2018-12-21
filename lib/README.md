@@ -1,6 +1,6 @@
 # BME680
 
-The BME680 folder contains the Bosch BSEC library version 1.4.6. All used headers and source files from it are here. There is additional required file - the library (libalgobsec.a) that is located in the parent folder.
+The BME680 folder contains the Bosch BSEC library version 1.4.7.1. All used headers and source files from it are here. There is additional required file - the library (libalgobsec.a) that is located in the parent folder.
 
 The folder structure is flattened. According to Arduino v1.0 specification only the source files from ROOT of the library should be built.
 

@@ -14,7 +14,7 @@ The sensor is quite accurate, but it measures the temperature of the sensor itse
 
 Currently the temperature offset is set directly in the code as parameter of the setTemperatureOffset method.
 
-### IAQ index calibration
+### IAQ calibration
 
 The current implementation relies on the BSEC library from Bosch. The library provide build in algorithms that can calculate the air quality and provide a IAQ reference value between 0 and 500. The IAQ index has the following semantic:
 * 0 .. 50 Good
@@ -36,11 +36,35 @@ When assembled and started the sensor have to be calibrated. There is an accurac
 * 2 - Calibration on-going
 * 3 - Calibration is done, now IAQ estimate achieves best perfomance
 
-Calibration is performed automatically in the background if the sensor is exposed to clean and polluted air for approximately 30 minutes each. What I do - use small plastic bag and fill it with dirty air (breath inside several times or whatever you came up with). Seal the bag with the sensor inside and keep it like this for 30 minutes. For the clean air - bring the sensor outside your home and keep it running there in a clear day for 30 minutes. Once the process is complete you'll get the accuracy output with value 3.
+Calibration is performed automatically in the background if the sensor is exposed to clean and polluted air for approximately 30 minutes each. Keep the sensor running for a day or two and it should pass the calibration process.
 
-*Note* - I'm considering a precalibration logic and process that will eliminate the BSEC autocalibration feature. The calibraiton will most likely be done once and will allow consistent reading over time (without further automatic recalibration). The goal is to have IAQ that is absolute and a sensor that will produce exactly the same value for specific air quality. This should be achievable if the GAS sensor resistance reading is mapped directly to IAQ index. The resistance reading should be quite stable during the sensor life. Calibrating multiple sensors in identical environment should result in sensors that are providing the same IAQ indexes for the same air quality.
+*Note* - A precalibration logic is added. It calculates the IAQ based on fixed gas sensor resistance for the AQ of 25 and 250. Not as usuful as expected initially. Moreover - Bosch has added staticIAQ output to the BSEC library that seems to do exactly what I tried to do, but a lot better.
 
 ## Over-the-air programming
 
 The firmware supports OTA update. Below curl command executed from the project root will perform the update:
 > curl -F "image=@.pioenvs/d1_mini/firmware.bin" br-aq-monitor1/update
+
+## InfluxDB integration
+
+The sensor can be configured for regular pushes to an InfluxDB (must be a DB that is not password protected). If the InfluxDB integration is enabled the sensor will turn off the WiFi and keep running by collecting data in the background. Once the telemtry data buffers are full or the time for pushing the data has come - the sensor will turn on the WiFi, push the data and turn it back off.
+
+The WiFi will stay on until the first data push cycle has been completed. In this time window the sensor can be reconfigured (open the http://sensor_address/ to get to the settings page). 
+
+## REST interface
+
+The firmware provides a REST API to ease the usage. There are several endpoints that should be mentioned:
+
+* http://{address}/get - get the current sensor readings as JSON document.
+* http://{address}/logs - get the logs (for debugging purposes).
+* http://{address}/settings - a form that is used to configure the sensor. Details like WiFi SSID/password, InfluxDB integration and offsets can be configured here.
+
+## Building the project
+
+The project uses a common set of tools that are availabe in another repo - https://github.com/funnybrum/esp8266-base. Clone the esp8266-base repo in the lib/conmmon folder.
+
+Check the details in the ./lib/README.md if you hit linking failures. The BSEC library used by the project requires modification of the d1_mini platform files in order to fit in the ESP8266 memory.
+
+## Initial sensor configuration
+
+Power on the sensor. It will run in AP mode with SSID br-aq-monitor. Connect to the WiFi network and open http://192.168.0.1/ . Configure the details there and click the save button. Once the WiFi SSID/password is properly configured - click the restart button and the sensor will connect to the WiFi network. Then try to ping it based on the hostname that was configured (or open your router and see the IP address that was given to the sensor).
