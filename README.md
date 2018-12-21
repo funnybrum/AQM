@@ -61,9 +61,14 @@ The firmware provides a REST API to ease the usage. There are several endpoints 
 
 ## Building the project
 
-The project uses a common set of tools that are availabe in another repo - https://github.com/funnybrum/esp8266-base. Clone the esp8266-base repo in the lib/conmmon folder.
+The project uses a common set of tools that are availabe in another repo - https://github.com/funnybrum/esp8266-base. Clone the esp8266-base repo in the lib/conmmon folder:
 
-Check the details in the ./lib/README.md if you hit linking failures. The BSEC library used by the project requires modification of the d1_mini platform files in order to fit in the ESP8266 memory.
+```
+cd lib
+git clone git@github.com:funnybrum/esp8266-base.git common
+```
+
+After that try building the project. You should hit linking failure stating that the firmware can't fit in the ESP8266 memory. Check the details in the ./lib/README.md to find out how to address that.
 
 ## Initial sensor configuration
 
