@@ -94,6 +94,6 @@ class WebServerBase {
             if (systemCheck != NULL) {
                 systemCheck->registerWebCall();
             }
-            server->send(200, "text/html", logger->getLogs());
+            server->send(200, "text/plain", logger->getLogs());
         }
 };
