@@ -41,15 +41,8 @@ void WebServer::handle_settings() {
 
     bool save = false;
 
-    process_setting("hostname", settingsData.network.hostname, sizeof(settingsData.network.hostname), save);
-    process_setting("ssid", settingsData.network.ssid, sizeof(settingsData.network.ssid), save);
-    process_setting("password", settingsData.network.password, sizeof(settingsData.network.password), save);
-
-    process_setting("ifx_enabled", settingsData.influxDB.enable, save);
-    process_setting("ifx_address", settingsData.influxDB.address, sizeof(settingsData.influxDB.address), save);
-    process_setting("ifx_db", settingsData.influxDB.database, sizeof(settingsData.influxDB.database), save);
-    process_setting("ifx_collect", settingsData.influxDB.collectInterval, save);
-    process_setting("ifx_push", settingsData.influxDB.pushInterval, save);
+    wifi.parse_config_params(this, save);
+    telemetryCollector.parse_config_params(this, save);
 
     process_setting("temp_offset", settingsData.aqSensor.temperatureOffset, save);
     process_setting("humidity_offset", settingsData.aqSensor.humidityOffset, save);
@@ -63,17 +56,17 @@ void WebServer::handle_settings() {
         settings.save();
     }
 
+    char network_settings[strlen_P(NETWORK_CONFIG_PAGE) + 32];
+    wifi.get_config_page(network_settings);
+
+    char influxdb_settings[strlen_P(INFLUXDB_CONFIG_PAGE) + 96];
+    telemetryCollector.get_config_page(influxdb_settings);
+
     sprintf_P(
         buffer,
         CONFIG_PAGE,
-        settingsData.network.hostname,
-        settingsData.network.ssid,
-        (settingsData.influxDB.enable)?"selected":"",
-        (!settingsData.influxDB.enable)?"selected":"",
-        settingsData.influxDB.address,
-        settingsData.influxDB.database,
-        settingsData.influxDB.collectInterval,
-        settingsData.influxDB.pushInterval,
+        network_settings,
+        influxdb_settings,
         settingsData.aqSensor.temperatureOffset, 
         settingsData.aqSensor.humidityOffset,
         (settingsData.aqSensor.calibrationPeriod != 28)?"selected":"",

@@ -12,8 +12,8 @@
 #include "LED.h"
 #include "Settings.h"
 #include "SystemCheck.h"
-#include "WebServer.h"
 #include "WiFi.h"
+#include "WebServer.h"
 #include "Logger.h"
 #include "InfluxDBCollector.h"
 
@@ -53,5 +53,6 @@ extern Settings settings;
 extern SettingsData settingsData;
 extern WiFiManager wifi;
 extern SystemCheck systemCheck;
+extern InfluxDBCollector telemetryCollector;
 
 #endif
