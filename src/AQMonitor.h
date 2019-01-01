@@ -10,12 +10,7 @@
 
 #include "AQSensors.h"
 #include "LED.h"
-#include "Settings.h"
-#include "SystemCheck.h"
-#include "WiFi.h"
-#include "WebServer.h"
-#include "Logger.h"
-#include "InfluxDBCollector.h"
+#include "esp8266-base.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor"

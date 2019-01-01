@@ -84,44 +84,41 @@ void AQSensors::loop() {
     // can be configured to compensate for this. The offset depends on the PCB layout.
     _iaqSensor.setTemperatureOffset(settingsData.aqSensor.temperatureOffset * -0.1f);
 
-    bool newDataAvailable = _iaqSensor.run();
-    if (millis() - _lastRefresh > 1000 * 10) {
-        if (!newDataAvailable) {
-            // Sensor is running. Get its status and try next time.
-            checkIaqSensorStatus();
+    if (_iaqSensor.run()) {
+        _lastRefresh = millis();
+
+        _temp = _iaqSensor.temperature;
+        _humidity = _iaqSensor.humidity + (settingsData.aqSensor.humidityOffset * 0.1f);
+        _pressure = _iaqSensor.pressure;
+        _gas_resistance = _iaqSensor.gasResistance;
+
+        _accuracy = _iaqSensor.iaqAccuracy;
+        _iaq = _iaqSensor.iaqEstimate;
+        _static_iaq = _iaqSensor.staticIaq;
+
+        // Some calculation with fixed values for good and bad air quality sensor resistance.
+        // Bad sensor resistance should be the value for AQ=250, good for AQ=25. Calculations
+        // are using linear interpolation to get the AQ value.
+        float dRper1AQ =
+            1000 * (
+                settingsData.aqSensor.goodAQResistance -
+                settingsData.aqSensor.badAQResistance
+            ) / 225.0f;
+        if (_gas_resistance - 1000 * settingsData.aqSensor.badAQResistance == 0) {
+            _calculated_iaq = 250.0f;
         } else {
-            _lastRefresh = millis();
-
-            _temp = _iaqSensor.temperature;
-            _humidity = _iaqSensor.humidity + (settingsData.aqSensor.humidityOffset * 0.1f);
-            _pressure = _iaqSensor.pressure;
-            _gas_resistance = _iaqSensor.gasResistance;
-
-            _accuracy = _iaqSensor.iaqAccuracy;
-            _iaq = _iaqSensor.iaqEstimate;
-            _static_iaq = _iaqSensor.staticIaq;
-
-            // Some calculation with fixed values for good and bad air quality sensor resistance.
-            // Bad sensor resistance should be the value for AQ=250, good for AQ=25. Calculations
-            // are using linear interpolation to get the AQ value.
-            float dRper1AQ =
-                1000 * (
-                    settingsData.aqSensor.goodAQResistance -
+            _calculated_iaq =
+                250.0f - (
+                    _gas_resistance - 1000 *
                     settingsData.aqSensor.badAQResistance
-                ) / 225.0f;
-            if (_gas_resistance - 1000 * settingsData.aqSensor.badAQResistance == 0) {
-                _calculated_iaq = 250.0f;
-            } else {
-                _calculated_iaq =
-                    250.0f - (
-                        _gas_resistance - 1000 *
-                        settingsData.aqSensor.badAQResistance
-                    ) / dRper1AQ;
-            }
-            _calculated_iaq = min(_calculated_iaq, 500.0f);
-            _calculated_iaq = max(_calculated_iaq, 0.0f);
-            updateState();
+                ) / dRper1AQ;
         }
+        _calculated_iaq = min(_calculated_iaq, 500.0f);
+        _calculated_iaq = max(_calculated_iaq, 0.0f);
+
+        updateState();
+    } else {
+        checkIaqSensorStatus();
     }
 }
 
