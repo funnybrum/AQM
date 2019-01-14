@@ -1,7 +1,6 @@
 #include "AQMonitor.h"
 
 AQSensors::AQSensors() {
-    _lastRefresh = 0;
     _lastStateUpdate = 0;
 }
 
@@ -85,7 +84,6 @@ void AQSensors::loop() {
     _iaqSensor.setTemperatureOffset(settingsData.aqSensor.temperatureOffset * -0.1f);
 
     if (_iaqSensor.run()) {
-        _lastRefresh = millis();
 
         _temp = _iaqSensor.temperature;
         _humidity = _iaqSensor.humidity + (settingsData.aqSensor.humidityOffset * 0.1f);
