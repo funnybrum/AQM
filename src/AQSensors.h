@@ -30,7 +30,6 @@ class AQSensors {
         float _static_iaq = 0.0f;
         float _calculated_iaq = 0.0f;
 
-        unsigned long _lastRefresh;
         unsigned long _lastStateUpdate;
 
         Bsec _iaqSensor = Bsec();

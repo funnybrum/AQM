@@ -187,9 +187,13 @@ void AQSensors::loadState(void)
         // Check if we have non-zero calibration byte. If we do - the calibraiton
         // data is valid and can be used.
         if (state[i] != 0) {
-            _iaqSensor.setState(settingsData.aqSensor.sensorCalibration);
-            checkIaqSensorStatus();
-            logger.log("Settings applied.");
+            // Patch to partially work around an issue in 1.4.7.1. Details are available at
+            // https://github.com/BoschSensortec/BSEC-Arduino-library/issues/38 .
+            logger.log("Saved state not applied!");
+
+            // _iaqSensor.setState(settingsData.aqSensor.sensorCalibration);
+            // checkIaqSensorStatus();
+            // logger.log("Settings applied.");
             break;
         }
     }

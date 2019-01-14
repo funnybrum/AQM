@@ -4,7 +4,11 @@ void initSettings() {
     strcpy(settingsData.network.hostname, HOSTNAME);
 }
 
+float lastPushedIAQ = -1;
+float lastCollectedIAQ = -1;
+
 void collectData(InfluxDBCollector* collector) {
+    lastCollectedIAQ = aqSensors.getIAQ();
     collector->append("iaq", aqSensors.getIAQ());
     collector->append("iaq_static", aqSensors.getStaticIAQ());
     collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
@@ -16,13 +20,34 @@ void collectData(InfluxDBCollector* collector) {
     collector->append("free_heap", ESP.getFreeHeap());
 }
 
+void onPush() {
+    lastPushedIAQ = lastCollectedIAQ;
+}
+
+/**
+ * Push the collected data if the current IAQ vs the last pushed IAQ is with difference at least 20
+ * and at least 20% at the same time.
+ */
+bool shouldPush() {
+    if (lastCollectedIAQ < 0) {
+        return false;
+    }
+
+    if (abs(lastPushedIAQ - lastCollectedIAQ) >= 20 &&
+        (lastPushedIAQ/lastCollectedIAQ <= 0.8f || lastPushedIAQ/lastCollectedIAQ >= 1.25f)) {
+            return true;
+        }
+
+    return false;
+}
+
 SettingsData settingsData = SettingsData();
 Logger logger = Logger();
 Settings settings = Settings(&logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
 WiFiManager wifi = WiFiManager(&logger, &settingsData.network);
 SystemCheck systemCheck = SystemCheck(&logger);
 InfluxDBCollector telemetryCollector = InfluxDBCollector(
-    &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData);
+    &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData, shouldPush, onPush);
 
 WebServer webServer = WebServer(&settingsData.network, &logger, &systemCheck);
 
