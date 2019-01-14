@@ -9,6 +9,9 @@ float lastCollectedIAQ = -1;
 
 void collectData(InfluxDBCollector* collector) {
     lastCollectedIAQ = aqSensors.getIAQ();
+    if (lastPushedIAQ < 0) {
+        lastPushedIAQ = lastCollectedIAQ;
+    }
     collector->append("iaq", aqSensors.getIAQ());
     collector->append("iaq_static", aqSensors.getStaticIAQ());
     collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
