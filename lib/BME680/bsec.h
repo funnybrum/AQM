@@ -65,12 +65,9 @@ public:
 	int64_t nextCall;			// Stores the time when the algorithm has to be called next in ms
 	int8_t bme680Status;		// Placeholder for the BME680 driver's error codes
 	bsec_library_return_t status;
-	float iaqEstimate, rawTemperature, pressure, rawHumidity, gasResistance, stabStatus, runInStatus, temperature, humidity,
-	      staticIaq, co2Equivalent, breathVocEquivalent, compGasValue, gasPercentage;
-	uint8_t iaqAccuracy, staticIaqAccuracy, co2Accuracy, breathVocAccuracy, compGasAccuracy, gasPercentageAcccuracy;
+	float iaqEstimate, rawTemperature, pressure, rawHumidity, gasResistance, stabStatus, runInStatus, temperature, humidity;
+	uint8_t iaqAccuracy;
 	int64_t outputTimestamp;	// Timestamp in ms of the output
-	static TwoWire *wireObj;
-	static SPIClass *spiObj;
 
 	/* Public APIs */
 	/**
@@ -142,8 +139,50 @@ public:
 	{
 		_tempOffset = tempOffset;
 	}
+
+private:
+	/* Private variables */
+	struct bme680_dev _bme680;
+	struct bme680_field_data _data;
+	float _tempOffset;
+	// Global variables to help create a millisecond timestamp that doesn't overflow every 51 days.
+	// If it overflows, it will have a negative value. Something that should never happen.
+	uint32_t millisOverflowCounter;
+	uint32_t lastTime;
+	static TwoWire *i2c_obj;
+	static SPIClass *spi_obj;
+
+	/* Private APIs */
+	/**
+	 * @brief Get the version of the BSEC library
+	 */
+	void getVersion(void);
+
+	/**
+	 * @brief Read data from the BME680 and process it
+	 * @param currTimeNs: Current time in ns
+	 * @param bme680Settings: BME680 sensor's settings
+	 * @return true if there are new outputs. false otherwise
+	 */
+	bool readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Settings);
+
+	/**
+	 * @brief Set the BME680 sensor's configuration
+	 * @param bme680Settings: Settings to configure the BME680
+	 * @return BME680 return code. BME680_OK for success, failure otherwise
+	 */
+	int8_t setBme680Config(bsec_bme_settings_t bme680Settings);
+
+	/**
+	 * @brief Common code for the begin function
+	 */
+	void beginCommon(void);
+
+	/**
+	 * @brief Function to zero the outputs
+	 */
+	void zeroOutputs(void);
 	
-		
 	/**
 	 * @brief Function to calculate an int64_t timestamp in milliseconds
 	 */
@@ -184,47 +223,6 @@ public:
 	* @return	Zero for success, non-zero otherwise
 	*/
 	static int8_t spiTransfer(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint16_t length);
-
-private:
-	/* Private variables */
-	struct bme680_dev _bme680;
-	struct bme680_field_data _data;
-	float _tempOffset;
-	// Global variables to help create a millisecond timestamp that doesn't overflow every 51 days.
-	// If it overflows, it will have a negative value. Something that should never happen.
-	uint32_t millisOverflowCounter;
-	uint32_t lastTime;
-
-	/* Private APIs */
-	/**
-	 * @brief Get the version of the BSEC library
-	 */
-	void getVersion(void);
-
-	/**
-	 * @brief Read data from the BME680 and process it
-	 * @param currTimeNs: Current time in ns
-	 * @param bme680Settings: BME680 sensor's settings
-	 * @return true if there are new outputs. false otherwise
-	 */
-	bool readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Settings);
-
-	/**
-	 * @brief Set the BME680 sensor's configuration
-	 * @param bme680Settings: Settings to configure the BME680
-	 * @return BME680 return code. BME680_OK for success, failure otherwise
-	 */
-	int8_t setBme680Config(bsec_bme_settings_t bme680Settings);
-
-	/**
-	 * @brief Common code for the begin function
-	 */
-	void beginCommon(void);
-
-	/**
-	 * @brief Function to zero the outputs
-	 */
-	void zeroOutputs(void);
 };
 
 #endif
