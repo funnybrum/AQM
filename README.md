@@ -5,6 +5,8 @@ An Air Quality Monitor firmware for ESP8266 board and BME680 sensor.
 
 Several sensors were considered and tested before stopping on BME680. Such are the MH-Z19, MICS-VZ-89TE, BME280. The BME680 provide single index of the IAQ that seems to be more than sufficient. As optional improvment I'm considering to add also support for dust particle sensor (probably PMS5003).
 
+There is a [PCB project](https://easyeda.com/funnybrum/IAQ_Board) available.
+
 ## Calibrating the sensor
 
 ### Temperature calibration
@@ -79,7 +81,7 @@ The sensor temperature reading is usually offsetted by 2-2.5 degrees C. If you c
 
 The humidity is quite accurate once the temperature offset have been specified. A test with Magnesium Chloride and Sodium Chloride were used and confirmed that sensor deviation was:
 * ~0.5% at 33.2% RH
-* ~0.3% at 75.4% RH
+* ~5% at 75.4% RH
 
 Without calibrating the temperature reading - the humidity would not be correct. The sensor is reporting relative humidity to the temperature. And as expected - wrong temperature, wrong humidity values.
 
