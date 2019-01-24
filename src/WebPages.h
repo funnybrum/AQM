@@ -60,5 +60,7 @@ const char GET_JSON[] PROGMEM = R"=====({
  "iaq_accuracy":%d,
  "iaq":%.2f,
  "static_iaq":%.2f,
- "calculated_iaq":%.2f
+ "calculated_iaq":%.2f,
+ "pm_25":%d,
+ "pm_100":%d
 })=====";

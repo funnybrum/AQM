@@ -20,6 +20,8 @@ void collectData(InfluxDBCollector* collector) {
     collector->append("resistance", aqSensors.getGasResistance());
     collector->append("pressure", aqSensors.getPressure());
     collector->append("accuracy", aqSensors.getAccuracy());
+    collector->append("pm_2.5", dustSensor.getPM025());
+    collector->append("pm_10", dustSensor.getPM100());
     collector->append("free_heap", ESP.getFreeHeap());
 }
 
@@ -45,7 +47,7 @@ bool shouldPush() {
 }
 
 SettingsData settingsData = SettingsData();
-Logger logger = Logger();
+Logger logger = Logger(true);
 Settings settings = Settings(&logger, (void*)(&settingsData), sizeof(SettingsData), initSettings);
 WiFiManager wifi = WiFiManager(&logger, &settingsData.network);
 SystemCheck systemCheck = SystemCheck(&logger);
@@ -56,10 +58,6 @@ WebServer webServer = WebServer(&settingsData.network, &logger, &systemCheck);
 
 void setup()
 { 
-    Serial.begin(115200);
-    while (! Serial) {
-        delay(1);
-    }
     settings.begin();
     wifi.begin();
     led.begin();
@@ -67,7 +65,7 @@ void setup()
     webServer.begin();
     systemCheck.begin();
     telemetryCollector.begin();
-
+    dustSensor.begin();
     wifi.connect();
 }
 
@@ -75,6 +73,7 @@ void loop() {
     wifi.loop();
     webServer.loop();
     aqSensors.loop();
+    dustSensor.loop();
     settings.loop();
     led.loop();
     systemCheck.loop();

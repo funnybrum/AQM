@@ -11,6 +11,7 @@
 #include "AQSensors.h"
 #include "LED.h"
 #include "esp8266-base.h"
+#include "PMS7003.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor"
