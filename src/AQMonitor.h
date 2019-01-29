@@ -12,6 +12,7 @@
 #include "LED.h"
 #include "esp8266-base.h"
 #include "PMS7003.h"
+#include "MHZ19.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor"

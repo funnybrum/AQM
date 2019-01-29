@@ -22,6 +22,7 @@ void collectData(InfluxDBCollector* collector) {
     collector->append("accuracy", aqSensors.getAccuracy());
     collector->append("pm_2.5", dustSensor.getPM025());
     collector->append("pm_10", dustSensor.getPM100());
+    collector->append("co2", CO2Sensor.getCO2());
     collector->append("free_heap", ESP.getFreeHeap());
 }
 
@@ -60,12 +61,13 @@ void setup()
 { 
     settings.begin();
     wifi.begin();
-    led.begin();
+    // led.begin();
     aqSensors.begin();
     webServer.begin();
     systemCheck.begin();
     telemetryCollector.begin();
     dustSensor.begin();
+    CO2Sensor.begin();
     wifi.connect();
 }
 
@@ -74,8 +76,9 @@ void loop() {
     webServer.loop();
     aqSensors.loop();
     dustSensor.loop();
+    CO2Sensor.loop();
     settings.loop();
-    led.loop();
+    // led.loop();
     systemCheck.loop();
     telemetryCollector.loop();
 

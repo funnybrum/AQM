@@ -34,7 +34,8 @@ void WebServer::handle_get() {
               aqSensors.getStaticIAQ(),
               aqSensors.getCalculatedIAQ(),
               dustSensor.getPM025(),
-              dustSensor.getPM100());
+              dustSensor.getPM100(),
+              CO2Sensor.getCO2());
     server->send(200, "application/json", buffer);
 }
 
