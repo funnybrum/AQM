@@ -54,8 +54,6 @@ void LED::blink(float iaq) {
         _lastBlink = millis();
 
         _targetGreen *= 0.1f;
-
-        logger.log("Blinking to %d, %d, %d", _targetRed, _targetGreen, _targetBlue);
 }
 
 LED led = LED();
