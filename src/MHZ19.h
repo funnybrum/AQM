@@ -13,7 +13,10 @@ class MHZ19 {
         uint16_t getCO2();
 
     private:
+        void sendCommand(uint8_t cmd[]);
         void processPacket();
+
+        bool initialized = false;
 
         uint16_t co2 = 0;
         uint8_t data[9];

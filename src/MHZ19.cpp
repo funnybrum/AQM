@@ -10,17 +10,16 @@ void MHZ19::begin() {
 void MHZ19::loop() {
     if (millis() - lastRead > 3 * 1000) {
         lastRead = millis();
-        uint8_t cmd[9];
-        cmd[0] = 0xFF;
-        cmd[1] = 0x01;
-        cmd[2] = 0x86;
-        cmd[3] = 0x00;
-        cmd[4] = 0x00;
-        cmd[5] = 0x00;
-        cmd[6] = 0x00;
-        cmd[7] = 0x00;
-        cmd[8] = 0x79;
-        serial->write(cmd, sizeof(cmd));
+        if (!initialized) {
+            // Disable ABC (automatic baseline calibration) logic.
+            uint8_t cmd[] = {0x01, 0x79, 0x00, 0x00, 0x00, 0x00, 0x00};
+            sendCommand(cmd);
+            initialized = true;
+        } else {
+            // Read the CO2 data.
+            uint8_t cmd[] = {0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00};
+            sendCommand(cmd);
+        }
     }
 
     while (serial->available() > 0) {
@@ -44,6 +43,26 @@ void MHZ19::loop() {
 
 uint16_t MHZ19::getCO2() {
     return co2;
+}
+
+void MHZ19::sendCommand(uint8_t cmd[]) {
+    // Checksum. Calculated as in the specs:
+    // (NOT(Byte1+Byte2+Byte3+Byte4+Byte5+Byte6+Byte7))+1
+    uint8_t cs = 0;
+
+    // Command start byte
+    serial->write(0xFF);
+    
+    for (int i = 0; i < 7; i++) {
+        serial->write(cmd[i]);
+        cs += cmd[i];
+    }
+
+    cs = 0xFF - cs;
+    cs += 0x01;
+
+    // Command checksum byte
+    serial->write(cs);
 }
 
 void MHZ19::processPacket() {
