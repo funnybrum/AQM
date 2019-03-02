@@ -56,9 +56,6 @@ const char GET_JSON[] PROGMEM = R"=====({
  "temp":%.2f,
  "humidity":%.2f,
  "pressure":%.2f,
- "gas_resistance":%.0f,
- "iaq_accuracy":%d,
- "iaq":%.2f,
- "static_iaq":%.2f,
- "calculated_iaq":%.2f
+ "tvoc":%.0f,
+ "e_co2":%f
 })=====";

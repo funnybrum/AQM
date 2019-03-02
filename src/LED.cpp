@@ -13,7 +13,7 @@ void LED::begin() {
 void LED::loop() {
     if (settingsData.led.blinkInterval > 0 &&
         millis() - _lastBlink > 1000 * settingsData.led.blinkInterval) {
-        blink(aqSensors.getIAQ());
+        blink(25.0f); //(aqSensors.getIAQ());
     }
 
     set(_targetRed, _targetGreen, _targetBlue);

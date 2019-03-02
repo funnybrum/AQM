@@ -8,19 +8,19 @@ float lastPushedIAQ = -1;
 float lastCollectedIAQ = -1;
 
 void collectData(InfluxDBCollector* collector) {
-    lastCollectedIAQ = aqSensors.getIAQ();
-    if (lastPushedIAQ < 0) {
-        lastPushedIAQ = lastCollectedIAQ;
-    }
-    collector->append("iaq", aqSensors.getIAQ());
-    collector->append("iaq_static", aqSensors.getStaticIAQ());
-    collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
-    collector->append("temperature", aqSensors.getTemp(), 2);
-    collector->append("humidity", aqSensors.getHumidity(), 1);
-    collector->append("resistance", aqSensors.getGasResistance());
-    collector->append("pressure", aqSensors.getPressure());
-    collector->append("accuracy", aqSensors.getAccuracy());
-    collector->append("free_heap", ESP.getFreeHeap());
+    // lastCollectedIAQ = aqSensors.getIAQ();
+    // if (lastPushedIAQ < 0) {
+    //     lastPushedIAQ = lastCollectedIAQ;
+    // }
+    // collector->append("iaq", aqSensors.getIAQ());
+    // collector->append("iaq_static", aqSensors.getStaticIAQ());
+    // collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
+    // collector->append("temperature", aqSensors.getTemp(), 2);
+    // collector->append("humidity", aqSensors.getHumidity(), 1);
+    // collector->append("resistance", aqSensors.getGasResistance());
+    // collector->append("pressure", aqSensors.getPressure());
+    // collector->append("accuracy", aqSensors.getAccuracy());
+    // collector->append("free_heap", ESP.getFreeHeap());
 }
 
 void onPush() {
@@ -53,6 +53,8 @@ InfluxDBCollector telemetryCollector = InfluxDBCollector(
     &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData, shouldPush, onPush);
 
 WebServer webServer = WebServer(&settingsData.network, &logger, &systemCheck);
+BME280 bme280 = BME280();
+SGP30 sgp30 = SGP30();
 
 void setup()
 { 
@@ -63,10 +65,11 @@ void setup()
     settings.begin();
     wifi.begin();
     led.begin();
-    aqSensors.begin();
     webServer.begin();
     systemCheck.begin();
     telemetryCollector.begin();
+    bme280.begin();
+    sgp30.begin();
 
     wifi.connect();
 }
@@ -74,11 +77,12 @@ void setup()
 void loop() {
     wifi.loop();
     webServer.loop();
-    aqSensors.loop();
     settings.loop();
     led.loop();
     systemCheck.loop();
     telemetryCollector.loop();
+    bme280.loop();
+    sgp30.loop();
 
     if (settingsData.influxDB.enable) {
         systemCheck.stop();

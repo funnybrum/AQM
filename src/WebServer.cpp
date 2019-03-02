@@ -25,14 +25,12 @@ void WebServer::handle_get() {
 
     sprintf_P(buffer,
               GET_JSON,
-              aqSensors.getTemp(),
-              aqSensors.getHumidity(),
-              aqSensors.getPressure(),
-              aqSensors.getGasResistance(),
-              aqSensors.getAccuracy(),
-              aqSensors.getIAQ(),
-              aqSensors.getStaticIAQ(),
-              aqSensors.getCalculatedIAQ());
+              bme280.getTemperature(),
+              bme280.getHumidity(),
+              bme280.getPressure(),
+              sgp30.getTVOC(),
+              sgp30.geteCO2());
+
     server->send(200, "application/json", buffer);
 }
 

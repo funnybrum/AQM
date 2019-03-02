@@ -1,5 +1,4 @@
-#ifndef _AQMONITOR_H_
-#define _AQMONITOR_H_
+#pragma once
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -8,9 +7,11 @@
 
 #include "user_interface.h"
 
-#include "AQSensors.h"
 #include "LED.h"
 #include "esp8266-base.h"
+
+#include "BME280.h"
+#include "SGP30.h"
 
 #define HTTP_PORT 80
 #define HOSTNAME "br-aq-monitor"
@@ -27,7 +28,7 @@
 struct SettingsData {
     NetworkSettings network;
     struct AQSensor {
-        uint8_t sensorCalibration[BSEC_MAX_STATE_BLOB_SIZE];
+        // uint8_t sensorCalibration[BSEC_MAX_STATE_BLOB_SIZE];
         // Actual correction = value / 10. I.e. value of -23 is -2.3C. Same apply for humidity.
         int16_t temperatureOffset;
         int16_t humidityOffset;
@@ -49,5 +50,5 @@ extern SettingsData settingsData;
 extern WiFiManager wifi;
 extern SystemCheck systemCheck;
 extern InfluxDBCollector telemetryCollector;
-
-#endif
+extern BME280 bme280;
+extern SGP30 sgp30;
