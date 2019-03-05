@@ -29,7 +29,8 @@ void WebServer::handle_get() {
               bme280.getHumidity(),
               bme280.getPressure(),
               sgp30.getTVOC(),
-              sgp30.geteCO2());
+              sgp30.geteCO2(),
+              bme280.getAbsoluteHimidity());
 
     server->send(200, "application/json", buffer);
 }
@@ -43,10 +44,6 @@ void WebServer::handle_settings() {
     telemetryCollector.parse_config_params(this, save);
 
     process_setting("temp_offset", settingsData.aqSensor.temperatureOffset, save);
-    process_setting("humidity_offset", settingsData.aqSensor.humidityOffset, save);
-    process_setting("calibration_period", settingsData.aqSensor.calibrationPeriod, save);
-    process_setting("good_aq_res", settingsData.aqSensor.goodAQResistance, save);
-    process_setting("bad_aq_res", settingsData.aqSensor.badAQResistance, save);
     
     process_setting("blink_interval", settingsData.led.blinkInterval, save);
 
@@ -66,11 +63,6 @@ void WebServer::handle_settings() {
         network_settings,
         influxdb_settings,
         settingsData.aqSensor.temperatureOffset, 
-        settingsData.aqSensor.humidityOffset,
-        (settingsData.aqSensor.calibrationPeriod != 28)?"selected":"",
-        (settingsData.aqSensor.calibrationPeriod == 28)?"selected":"",
-        settingsData.aqSensor.goodAQResistance,
-        settingsData.aqSensor.badAQResistance,
         settingsData.led.blinkInterval);
     server->send(200, "text/html", buffer);
 }

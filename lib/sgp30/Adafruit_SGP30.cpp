@@ -90,7 +90,12 @@ boolean Adafruit_SGP30::begin(TwoWire *theWire) {
 */
 /**************************************************************************/
 boolean Adafruit_SGP30::IAQinit(void) {
+  // Soft reset
   uint8_t command[2];
+  command[0] = 0x00;
+  command[1] = 0x06;
+  readWordFromCommand(command, 2, 10);
+
   command[0] = 0x20;
   command[1] = 0x03;
   return readWordFromCommand(command, 2, 10);

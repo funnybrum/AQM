@@ -7,9 +7,10 @@
 
 #include "user_interface.h"
 
-#include "LED.h"
 #include "esp8266-base.h"
 
+#include "Settings.h"
+#include "LED.h"
 #include "BME280.h"
 #include "SGP30.h"
 
@@ -24,25 +25,6 @@
 
 #define MIN_TO_MILLIS(mins) (mins * 60L * 1000L)
 #define BME680_SAVE_STATE_PERIOD MIN_TO_MILLIS(4L*60L)  // Save the BSEC state each 4 hours.
-
-struct SettingsData {
-    NetworkSettings network;
-    struct AQSensor {
-        // uint8_t sensorCalibration[BSEC_MAX_STATE_BLOB_SIZE];
-        // Actual correction = value / 10. I.e. value of -23 is -2.3C. Same apply for humidity.
-        int16_t temperatureOffset;
-        int16_t humidityOffset;
-        int16_t badAQResistance;
-        int16_t goodAQResistance;
-        uint16_t calibrationPeriod;
-    } aqSensor;
-
-    struct LED {
-        uint16_t blinkInterval;
-    } led;
-
-    struct InfluxDBCollectorSettings influxDB;
-};
 
 extern Logger logger;
 extern Settings settings;

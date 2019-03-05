@@ -4,27 +4,28 @@ void initSettings() {
     strcpy(settingsData.network.hostname, HOSTNAME);
 }
 
-float lastPushedIAQ = -1;
-float lastCollectedIAQ = -1;
+float lastPushedTVOC = -1;
+float lastCollectedTVOC = -1;
 
 void collectData(InfluxDBCollector* collector) {
-    // lastCollectedIAQ = aqSensors.getIAQ();
-    // if (lastPushedIAQ < 0) {
-    //     lastPushedIAQ = lastCollectedIAQ;
-    // }
-    // collector->append("iaq", aqSensors.getIAQ());
-    // collector->append("iaq_static", aqSensors.getStaticIAQ());
-    // collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
-    // collector->append("temperature", aqSensors.getTemp(), 2);
-    // collector->append("humidity", aqSensors.getHumidity(), 1);
-    // collector->append("resistance", aqSensors.getGasResistance());
-    // collector->append("pressure", aqSensors.getPressure());
-    // collector->append("accuracy", aqSensors.getAccuracy());
-    // collector->append("free_heap", ESP.getFreeHeap());
+    lastCollectedTVOC = sgp30.getTVOC();
+
+    // Avoid false positivive initial push condition.
+    if (lastPushedTVOC < 0) {
+        lastPushedTVOC = lastCollectedTVOC;
+    }
+
+    collector->append("eco2", sgp30.geteCO2());
+    collector->append("tvoc", sgp30.getTVOC());
+    collector->append("temperature", bme280.getTemperature(), 2);
+    collector->append("humidity", bme280.getHumidity(), 1);
+    collector->append("pressure", bme280.getPressure());
+    collector->append("absolute_humidity", bme280.getAbsoluteHimidity());
+    collector->append("free_heap", ESP.getFreeHeap());
 }
 
 void onPush() {
-    lastPushedIAQ = lastCollectedIAQ;
+    lastPushedTVOC = lastCollectedTVOC;
 }
 
 /**
@@ -32,16 +33,11 @@ void onPush() {
  * and at least 20% at the same time.
  */
 bool shouldPush() {
-    if (lastCollectedIAQ < 0) {
+    if (lastCollectedTVOC < 0) {
         return false;
     }
 
-    if (abs(lastPushedIAQ - lastCollectedIAQ) >= 20 &&
-        (lastPushedIAQ/lastCollectedIAQ <= 0.8f || lastPushedIAQ/lastCollectedIAQ >= 1.25f)) {
-            return true;
-        }
-
-    return false;
+    return lastPushedTVOC/lastCollectedTVOC <= 0.8f || lastPushedTVOC/lastCollectedTVOC >= 1.25f;
 }
 
 SettingsData settingsData = SettingsData();
@@ -53,7 +49,7 @@ InfluxDBCollector telemetryCollector = InfluxDBCollector(
     &logger, &wifi, &settingsData.influxDB, &settingsData.network, collectData, shouldPush, onPush);
 
 WebServer webServer = WebServer(&settingsData.network, &logger, &systemCheck);
-BME280 bme280 = BME280();
+BME280 bme280 = BME280(1000, &settingsData.aqSensor.temperatureOffset);
 SGP30 sgp30 = SGP30();
 
 void setup()
