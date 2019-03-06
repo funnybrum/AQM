@@ -17,8 +17,8 @@ class BME280 {
 
             bme280->setSampling(
                 Adafruit_BME280::MODE_NORMAL,
-                Adafruit_BME280::SAMPLING_X2,
-                Adafruit_BME280::SAMPLING_X1,
+                Adafruit_BME280::SAMPLING_X4,
+                Adafruit_BME280::SAMPLING_X4,
                 Adafruit_BME280::SAMPLING_X1,
                 Adafruit_BME280::FILTER_OFF,
                 Adafruit_BME280::STANDBY_MS_1000);
@@ -29,9 +29,31 @@ class BME280 {
 
         void loop() {
             if (millis() - _lastUpdate > _poolingInterval) {
+                bool reset = false;
+
+                float t = bme280->readTemperature();
+                float h = bme280->readHumidity();
+
+                reset = (_temperature != 0.0f) && (abs(t - _temperature) > 5 || abs(h - _humidity) > 5);
+
+                if (reset) {
+                    logger.log("BME280 reset -> t %0.2f to %0.2f, h %0.2f to 0.2f",
+                                _temperature,
+                                t,
+                                _humidity,
+                                h);
+                    _temperature = 0.0f;
+                    _humidity = 0.0f;
+                    bme280->init();
+                    delay(1000);
+                }
+
                 _temperature = bme280->readTemperature();
                 _humidity = bme280->readHumidity();
                 _pressure = bme280->readPressure();
+                if (reset) {
+                    logger.log("BME280 reset -> t %0.2f, h %0.2f", _temperature, _humidity);
+                }
                 _lastUpdate = millis();
             }
         }

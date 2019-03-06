@@ -40,7 +40,7 @@ class SGP30 {
             if (millis() - _lastUpdate > _poolingInterval) {
                 if (abs(_bme280_humidity - bme280.getHumidity()) > 0.25) {
                     _bme280_humidity = bme280.getAbsoluteHimidity();
-                    if (!sgp30->setHumidity(_bme280_humidity)) {
+                    if (!sgp30->setHumidity(_bme280_humidity * 1000)) {
                         logger.log("Failed on sgp30->setHumidity()!");
                     }
                 }
