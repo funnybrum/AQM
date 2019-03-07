@@ -12,6 +12,7 @@ void WebServer::registerHandlers() {
     server->on("/settings", std::bind(&WebServer::handle_settings, this));
     server->on("/reset", std::bind(&WebServer::handle_reset, this));
     server->on("/blink", std::bind(&WebServer::handle_blink, this));
+    server->on("/recalibrate", std::bind(&WebServer::handle_recalibrate, this));  
 }
 
 void WebServer::handle_root() {
@@ -83,4 +84,10 @@ void WebServer::handle_blink() {
     } else {
         server->send(400, "text/plain", "Missing iaq argument!");
     }
+}
+
+void WebServer::handle_recalibrate() {
+    settingsData.aqSensor.eco2_base = 0;
+    settingsData.aqSensor.tvoc_base = 0;
+    server->send(200, "text/plain", "Done.");
 }
