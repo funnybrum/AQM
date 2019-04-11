@@ -4,3 +4,4 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 lib/esp8266-base
+.vscode/ipch/

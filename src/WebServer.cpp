@@ -79,7 +79,16 @@ void WebServer::handle_settings() {
 
 void WebServer::handle_reset() {
     systemCheck->registerWebCall();
-    settings.erase();
+    if (server->hasArg("full")) {
+        // Erase absolutely all settings, even WiFi credentials.
+        settings.erase();
+    } else {
+        // Erase only the sensor calibration data.
+        memset(
+            settingsData.aqSensor.sensorCalibration,
+            0,
+            sizeof(settingsData.aqSensor.sensorCalibration));
+    }
     server->send(200, "text/plain", "Calibration data erased.");
 }
 

@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bme680_defs.h
- * @date	22 Feb 2018
- * @version	3.5.8
+ * @date	19 Jun 2018
+ * @version	3.5.9
  * @brief
  *
  */
@@ -103,7 +103,7 @@
 /** BME680 configuration macros */
 /** Enable or un-comment the macro to provide floating point data output */
 #ifndef BME680_FLOAT_POINT_COMPENSATION
-#define BME680_FLOAT_POINT_COMPENSATION
+/* #define BME680_FLOAT_POINT_COMPENSATION */
 #endif
 
 /** BME680 General config */
