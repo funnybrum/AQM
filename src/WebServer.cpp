@@ -32,7 +32,7 @@ void WebServer::handle_get() {
               aqSensors.getAccuracy(),
               aqSensors.getIAQ(),
               aqSensors.getStaticIAQ(),
-              aqSensors.getCalculatedIAQ());
+              ESP.getFreeHeap());
     server->send(200, "application/json", buffer);
 }
 

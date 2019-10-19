@@ -14,13 +14,12 @@ void collectData(InfluxDBCollector* collector) {
     }
     collector->append("iaq", aqSensors.getIAQ());
     collector->append("iaq_static", aqSensors.getStaticIAQ());
-    collector->append("iaq_calculated", aqSensors.getCalculatedIAQ());
     collector->append("temperature", aqSensors.getTemp(), 2);
     collector->append("humidity", aqSensors.getHumidity(), 1);
     collector->append("resistance", aqSensors.getGasResistance());
     collector->append("pressure", aqSensors.getPressure());
     collector->append("accuracy", aqSensors.getAccuracy());
-    collector->append("free_heap", ESP.getFreeHeap());
+    // collector->append("free_heap", ESP.getFreeHeap());
 }
 
 void onPush() {

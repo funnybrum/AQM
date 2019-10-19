@@ -18,7 +18,7 @@ class AQSensors {
         uint8_t getAccuracy();
         float getIAQ();
         float getStaticIAQ();
-        float getCalculatedIAQ();
+
     private:
         float _temp = 0.0f;
         float _humidity = 0.0f;
@@ -28,7 +28,6 @@ class AQSensors {
         uint8_t _accuracy = 0;
         float _iaq = 0.0f;
         float _static_iaq = 0.0f;
-        float _calculated_iaq = 0.0f;
 
         unsigned long _lastStateUpdate;
 

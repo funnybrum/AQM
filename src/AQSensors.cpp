@@ -56,8 +56,10 @@ void AQSensors::begin() {
 
     if (settingsData.aqSensor.calibrationPeriod != 28) {
         _iaqSensor.setConfig(generic_33v_300s_4d);
+        logger.log("Calibration period: 28d");
     } else {
         _iaqSensor.setConfig(generic_33v_300s_28d);
+        logger.log("Calibration period: 4d");
     }
 
     checkIaqSensorStatus();
@@ -93,27 +95,6 @@ void AQSensors::loop() {
         _iaq = _iaqSensor.iaqEstimate;
         _static_iaq = _iaqSensor.staticIaq;
 
-
-        // Some calculation with fixed values for good and bad air quality sensor resistance.
-        // Bad sensor resistance should be the value for AQ=250, good for AQ=25. Calculations
-        // are using linear interpolation to get the AQ value.
-        float dRper1AQ =
-            1000 * (
-                settingsData.aqSensor.goodAQResistance -
-                settingsData.aqSensor.badAQResistance
-            ) / 225.0f;
-        if (_gas_resistance - 1000 * settingsData.aqSensor.badAQResistance == 0) {
-            _calculated_iaq = 250.0f;
-        } else {
-            _calculated_iaq =
-                250.0f - (
-                    _gas_resistance - 1000 *
-                    settingsData.aqSensor.badAQResistance
-                ) / dRper1AQ;
-        }
-        _calculated_iaq = min(_calculated_iaq, 500.0f);
-        _calculated_iaq = max(_calculated_iaq, 0.0f);
-
         updateState();
     } else {
         checkIaqSensorStatus();
@@ -138,10 +119,6 @@ float AQSensors::getHumidity() {
 
 float AQSensors::getTemp() {
     return _temp;
-}
-
-float AQSensors::getCalculatedIAQ() {
-    return _calculated_iaq;
 }
 
 float AQSensors::getPressure() {
@@ -189,6 +166,8 @@ void AQSensors::loadState(void)
 
             _iaqSensor.setState(settingsData.aqSensor.sensorCalibration);
             checkIaqSensorStatus();
+            // The next line will prevent the state saving if the accuracy is less than 3.
+            _lastStateUpdate = millis();
             logger.log("Settings applied.");
             break;
         }
@@ -198,14 +177,14 @@ void AQSensors::loadState(void)
 void AQSensors::updateState(void)
 {
     bool update = false;
-    if (_lastStateUpdate == 0) {
-        if (_iaqSensor.iaqAccuracy >= 3) {
-            update = true;
-        }
-    } else {
-        unsigned long timeSinceLastStateUpdate = millis() - _lastStateUpdate;
-        if (timeSinceLastStateUpdate > BME680_SAVE_STATE_PERIOD) {
-            update = true;
+    if (_iaqSensor.iaqAccuracy >= 3) {
+        if (_lastStateUpdate == 0) {
+             update = true;
+        } else {
+            unsigned long timeSinceLastStateUpdate = millis() - _lastStateUpdate;    
+            if (timeSinceLastStateUpdate > BME680_SAVE_STATE_PERIOD) {
+                update = true;
+            }
         }
     }
 
