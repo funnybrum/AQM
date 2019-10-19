@@ -255,6 +255,8 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 	if (_data.status & BME680_NEW_DATA_MSK) {
 		if (bme680Settings.process_data & BSEC_PROCESS_TEMPERATURE) {
 			inputs[nInputs].sensor_id = BSEC_INPUT_TEMPERATURE;
+			// inputs[nInputs].signal = _data.temperature;
+			// Fixing something. Not sure what it was...
 			inputs[nInputs].signal = (float)(((float)_data.temperature)/100.0f);
 			inputs[nInputs].time_stamp = currTimeNs;
 			nInputs++;
@@ -266,6 +268,8 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 		}
 		if (bme680Settings.process_data & BSEC_PROCESS_HUMIDITY) {
 			inputs[nInputs].sensor_id = BSEC_INPUT_HUMIDITY;
+			// inputs[nInputs].signal = _data.humidity;
+			// Fixing something. Not sure what it was...
 			inputs[nInputs].signal = (float)(((float)_data.humidity)/1000.0f);
 			inputs[nInputs].time_stamp = currTimeNs;
 			nInputs++;
