@@ -31,8 +31,6 @@ struct SettingsData {
         // Actual correction = value / 10. I.e. value of -23 is -2.3C. Same apply for humidity.
         int16_t temperatureOffset;
         int16_t humidityOffset;
-        int16_t badAQResistance;
-        int16_t goodAQResistance;
         uint16_t calibrationPeriod;
     } aqSensor;
 

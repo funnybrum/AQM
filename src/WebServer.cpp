@@ -47,8 +47,6 @@ void WebServer::handle_settings() {
     process_setting("temp_offset", settingsData.aqSensor.temperatureOffset, save);
     process_setting("humidity_offset", settingsData.aqSensor.humidityOffset, save);
     process_setting("calibration_period", settingsData.aqSensor.calibrationPeriod, save);
-    process_setting("good_aq_res", settingsData.aqSensor.goodAQResistance, save);
-    process_setting("bad_aq_res", settingsData.aqSensor.badAQResistance, save);
     
     process_setting("blink_interval", settingsData.led.blinkInterval, save);
 
@@ -71,8 +69,6 @@ void WebServer::handle_settings() {
         settingsData.aqSensor.humidityOffset,
         (settingsData.aqSensor.calibrationPeriod != 28)?"selected":"",
         (settingsData.aqSensor.calibrationPeriod == 28)?"selected":"",
-        settingsData.aqSensor.goodAQResistance,
-        settingsData.aqSensor.badAQResistance,
         settingsData.led.blinkInterval);
     server->send(200, "text/html", buffer);
 }
