@@ -54,7 +54,7 @@ void AQSensors::begin() {
         255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
         255,255,255,255,255,255,255,255,255,48,117,0,0,0,0,59,62,0,0};
 
-    if (settingsData.aqSensor.calibrationPeriod != 28) {
+    if (settingsData.aqSensor.calibrationPeriod == 28) {
         _iaqSensor.setConfig(generic_33v_300s_4d);
         logger.log("Calibration period: 28d");
     } else {
